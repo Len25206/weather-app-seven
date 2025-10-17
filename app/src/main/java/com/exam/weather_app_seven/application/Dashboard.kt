@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,60 +74,7 @@ fun Dashboard() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-
-        Column(
-            modifier = Modifier
-                .shadow(
-                    10.dp,
-                    shape = RoundedCornerShape(
-                        30.dp
-                    )
-                )
-                .fillMaxWidth()
-                .height(300.dp)
-                .background(
-                    brush = morningBrush,
-                    shape = RoundedCornerShape(
-                        bottomStart = 30.dp,
-                        bottomEnd = 30.dp
-                    )
-                )
-                .padding(
-                    horizontal = 15.dp,
-                    vertical = 15.dp
-                ),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            Row(
-                modifier = Modifier
-                    .wrapContentSize()
-                    .background(
-                        Color.White,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .padding(horizontal = 15.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = null,
-                    tint = Color.Red,
-                )
-                Text(
-                    text = "Location",
-                    style = TextStyle(
-                        fontSize = 25.sp,
-                        color = Color.Black
-                    )
-                )
-            }
-            Spacer(modifier = Modifier.height(15.dp))
-            CurrentDate()
-            Spacer(modifier = Modifier.height(15.dp))
-            CurrentTemperature()
-        }
+        MainBoard(morningBrush)
         Spacer(
             modifier = Modifier
                 .fillMaxWidth()
@@ -139,10 +87,28 @@ fun Dashboard() {
                 .height(30.dp)
         )
         WindAndAir()
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(30.dp)
+        )
+        TextButton(
+            onClick = { /*TODO*/ },
+            modifier = Modifier
+                .fillMaxWidth()
+
+        ) {
+            Text(
+                text = "SHOW WEATHER HISTORY",
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    color = Color.Black
+                )
+            )
+        }
     }
-
-
 }
+
 
 @Composable
 fun CurrentDate() {
@@ -163,6 +129,63 @@ fun CurrentDate() {
                 color = Color.Black
             )
         )
+    }
+}
+
+@Composable
+fun MainBoard(brush: Brush) {
+    Column(
+        modifier = Modifier
+            .shadow(
+                10.dp,
+                shape = RoundedCornerShape(
+                    30.dp
+                )
+            )
+            .fillMaxWidth()
+            .height(270.dp)
+            .background(
+                brush = brush,
+                shape = RoundedCornerShape(
+                    bottomStart = 30.dp,
+                    bottomEnd = 30.dp
+                )
+            )
+            .padding(
+                horizontal = 15.dp,
+                vertical = 15.dp
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Row(
+            modifier = Modifier
+                .wrapContentSize()
+                .background(
+                    Color.White,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .padding(horizontal = 15.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.LocationOn,
+                contentDescription = null,
+                tint = Color.Red,
+            )
+            Text(
+                text = "Location",
+                style = TextStyle(
+                    fontSize = 25.sp,
+                    color = Color.Black
+                )
+            )
+        }
+        Spacer(modifier = Modifier.height(15.dp))
+        CurrentDate()
+        Spacer(modifier = Modifier.height(15.dp))
+        CurrentTemperature()
     }
 }
 
@@ -309,7 +332,7 @@ fun WindAndAir() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(250.dp)
+            .height(200.dp)
             .shadow(
                 10.dp,
                 shape = RoundedCornerShape(10.dp)
@@ -317,6 +340,10 @@ fun WindAndAir() {
             .background(
                 Color.White,
                 shape = RoundedCornerShape(10.dp)
+            )
+            .padding(
+                horizontal = 15.dp,
+                vertical = 15.dp
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
@@ -327,8 +354,6 @@ fun WindAndAir() {
                 fontSize = 20.sp,
                 color = Color.Black
             ),
-            modifier = Modifier
-                .padding(top = 20.dp)
         )
         Spacer(
             modifier = Modifier
@@ -387,15 +412,16 @@ fun WindAndAir() {
         Spacer(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(40.dp)
+                .height(20.dp)
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 15.dp),
         ) {
             Column(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(bottom = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
