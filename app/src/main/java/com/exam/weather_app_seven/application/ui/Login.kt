@@ -1,4 +1,4 @@
-package com.exam.weather_app_seven.application
+package com.exam.weather_app_seven.application.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +18,9 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -29,10 +31,24 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.exam.weather_app_seven.application.Screen
+import com.exam.weather_app_seven.retrofit.service.weatherService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Preview
 @Composable
-fun Login() {
+fun Login(
+    navController: NavController? = null
+) {
+//    LaunchedEffect(Unit){
+//        CoroutineScope(Dispatchers.IO).launch {
+//            weatherService()
+//        }
+//    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +81,7 @@ fun Login() {
             verticalArrangement = Arrangement.Top
         ) {
             Text(
-                text = "☁️`Weather App",
+                text = "☁️Weather App",
                 style = TextStyle(
                     fontSize = 30.sp,
                     color = Color.Black
@@ -134,6 +150,7 @@ fun Login() {
                         width = 350.dp
                     ),
                 onClick = {
+                    navController?.navigate(Screen.DashboardPage.route)
                 },
                 elevation = ButtonDefaults.buttonElevation(8.dp),
                 shape = RoundedCornerShape(10.dp),
@@ -173,13 +190,20 @@ fun Login() {
                     modifier = Modifier
                         .width(5.dp)
                 )
-                Text(
-                    "Register here",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Blue
+                TextButton(
+                    onClick = {
+                        navController?.navigate(Screen.RegisterPage.route)
+                    }
+
+                ) {
+                    Text(
+                        "Register here",
+                        style = TextStyle(
+                            fontSize = 15.sp,
+                            color = Color.Blue
+                        )
                     )
-                )
+                }
             }
         }
 

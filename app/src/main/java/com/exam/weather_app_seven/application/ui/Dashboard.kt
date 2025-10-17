@@ -1,4 +1,4 @@
-package com.exam.weather_app_seven.application
+package com.exam.weather_app_seven.application.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,11 +30,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.exam.weather_app_seven.R
 
-@Preview
 @Composable
-fun Dashboard() {
+fun Dashboard(
+    navController: NavController
+) {
     val morningGradientColors = listOf(
         Color(0xFFF3C9DA), // Dawn Pink
         Color(0xFFF7E7C5), // Morning Gold

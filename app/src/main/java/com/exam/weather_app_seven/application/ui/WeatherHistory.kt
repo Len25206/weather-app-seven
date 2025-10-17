@@ -1,4 +1,4 @@
-package com.exam.weather_app_seven.application
+package com.exam.weather_app_seven.application.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
