@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.exam.weather_app_seven.application.Dashboard
+import com.exam.weather_app_seven.application.WeatherHistory
 import com.exam.weather_app_seven.ui.theme.WeatherappsevenTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,7 +20,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Dashboard()
+//            Dashboard()
+            WeatherHistory()
         }
     }
 }
