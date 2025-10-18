@@ -2,9 +2,15 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)  // ADD THIS LINE
+    id("kotlin-kapt")  // or id("com.google.devtools.ksp") if using KSP
 }
 
+
+
 android {
+
+
     namespace = "com.exam.weather_app_seven"
     compileSdk = 36
 
@@ -63,4 +69,17 @@ dependencies {
 // gson converter
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
+
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation (libs.hilt.android)
+    kapt(libs.hilt.compiler)
+
+    implementation(libs.play.services.location)
+
+    implementation(libs.kotlin.metadata.jvm)
+
+}
+
+kapt {
+    correctErrorTypes = true
 }

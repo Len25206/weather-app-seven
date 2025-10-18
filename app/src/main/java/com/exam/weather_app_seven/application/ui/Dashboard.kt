@@ -1,5 +1,7 @@
 package com.exam.weather_app_seven.application.ui
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,16 +29,36 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.exam.weather_app_seven.R
+import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
+import androidx.compose.runtime.collectAsState
+import com.exam.weather_app_seven.Utils.DateTimeHelper
 
 @Composable
 fun Dashboard(
-    navController: NavController
+    navController: NavController,
+    weatherViewModel: WeatherViewModel
 ) {
+    val weatherState = weatherViewModel.weather.collectAsState()
+    val location = weatherState.value?.locationName
+    val currentTemp = weatherState.value?.mainTemp
+    val weatherDescription = weatherState.value?.weatherDescription
+    val country = weatherState.value?.sysCountry
+    val sunrise = weatherState.value?.sysSunrise
+    val sunset = weatherState.value?.sysSunset
+    val windSpeed = weatherState.value?.windSpeed
+    val pressure = weatherState.value?.pressure
+    val humidity = weatherState.value?.humidity
+    val visibility = weatherState.value?.visibility
+
+
+
+    Log.e("TAG", "Dashboard: $location")
+
+
     val morningGradientColors = listOf(
         Color(0xFFF3C9DA), // Dawn Pink
         Color(0xFFF7E7C5), // Morning Gold
@@ -45,13 +67,6 @@ fun Dashboard(
         Color(0xFF3A7D9C)  // Deep Blue
     )
 
-    val morningBrush = Brush.verticalGradient(
-        colors = morningGradientColors,
-        startY = 0f,
-        endY = Float.POSITIVE_INFINITY
-    )
-
-
     val nightGradientColors = listOf(
         Color(0xFF1A0F3D), // Dark Purple
         Color(0xFF2B2F77), // Deep Indigo
@@ -59,12 +74,12 @@ fun Dashboard(
         Color(0xFF141852), // Midnight Blue
         Color(0xFF070B34)  // Navy Blue
     )
-
-    val nightBrush = Brush.verticalGradient(
-        colors = nightGradientColors,
+    val backgroundBrush = Brush.verticalGradient(
+        colors = morningGradientColors,
         startY = 0f,
         endY = Float.POSITIVE_INFINITY
     )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -76,19 +91,35 @@ fun Dashboard(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        MainBoard(morningBrush)
+        MainBoard(
+            backgroundBrush,
+            location = location,
+            temperature = currentTemp,
+            weatherDescription = weatherDescription,
+            country = country
+        )
         Spacer(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(30.dp)
         )
-        SunRiseSunSet()
+        SunRiseSunSet(
+            brush = backgroundBrush,
+            sunrise = sunrise,
+            sunset = sunset
+        )
         Spacer(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(30.dp)
         )
-        WindAndAir()
+        WindAndAir(
+            brush = backgroundBrush,
+            windSpeed = windSpeed,
+            pressure = pressure,
+            humidity = humidity,
+            visibility = visibility
+        )
         Spacer(
             modifier = Modifier
                 .fillMaxWidth()
@@ -114,18 +145,21 @@ fun Dashboard(
 
 @Composable
 fun CurrentDate() {
+    val currentDate = System.currentTimeMillis()
+    val uiCurrentDate = DateTimeHelper.toReadableDate(currentDate)
+    val week = DateTimeHelper.toWeek(currentDate)
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "Friday",
+            text = week.uppercase(),
             style = TextStyle(
                 fontSize = 25.sp,
                 color = Color.Black
             )
         )
         Text(
-            text = "May 20, 2023 | 12:00 am",
+            text = uiCurrentDate,
             style = TextStyle(
                 fontSize = 15.sp,
                 color = Color.Black
@@ -135,7 +169,13 @@ fun CurrentDate() {
 }
 
 @Composable
-fun MainBoard(brush: Brush) {
+fun MainBoard(
+    brush: Brush,
+    location: String? = null,
+    temperature: Double? = null,
+    weatherDescription: String? = null,
+    country: String? = null
+) {
     Column(
         modifier = Modifier
             .shadow(
@@ -171,41 +211,57 @@ fun MainBoard(brush: Brush) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
+
             Icon(
                 imageVector = Icons.Default.LocationOn,
                 contentDescription = null,
                 tint = Color.Red,
             )
+
             Text(
-                text = "Location",
+                text = "$location, ${country?.uppercase()}",
                 style = TextStyle(
                     fontSize = 25.sp,
                     color = Color.Black
                 )
             )
+
         }
         Spacer(modifier = Modifier.height(15.dp))
         CurrentDate()
         Spacer(modifier = Modifier.height(15.dp))
-        CurrentTemperature()
+        CurrentTemperature(
+            temperature = temperature,
+            weatherDescription = weatherDescription
+        )
     }
 }
 
+@SuppressLint("DefaultLocale")
 @Composable
-fun CurrentTemperature() {
-
+fun CurrentTemperature(
+    temperature: Double? = null,
+    weatherDescription: String? = null
+) {
+    val kelvin = 273.15
+    val temperatureDouble = temperature ?: 0.0
+    val celsius = temperatureDouble - kelvin
+    val formattedTemp = String.format("%.1f", celsius)
+    Log.e("TAG", "CurrentTemperature: $temperatureDouble")
+    Log.e("TAG", "CurrentTemperature: $formattedTemp")
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+
         Row(
             modifier = Modifier.wrapContentSize(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "25°C",
+                text = "$formattedTemp°C",
                 style = TextStyle(
                     fontSize = 50.sp,
                     color = Color.Black
@@ -218,28 +274,13 @@ fun CurrentTemperature() {
                 modifier = Modifier
                     .size(100.dp),
             )
-
         }
-
-        Row(
-            modifier = Modifier
-                .wrapContentSize()
-                .padding(end = 25.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
+        Spacer(modifier = Modifier.weight(1f))
+        weatherDescription?.uppercase()?.let {
             Text(
-                text = "Sunny, Windy",
+                text = it,
                 style = TextStyle(
-                    fontSize = 25.sp,
-                    color = Color.Black
-                )
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "Raining",
-                style = TextStyle(
-                    fontSize = 15.sp,
+                    fontSize = 20.sp,
                     color = Color.Black
                 )
             )
@@ -248,7 +289,14 @@ fun CurrentTemperature() {
 }
 
 @Composable
-fun SunRiseSunSet() {
+fun SunRiseSunSet(
+    brush: Brush,
+    sunrise: String? = null,
+    sunset: String? = null
+) {
+    val sunriseTimeFormatted = sunrise?.let { DateTimeHelper.toReadableTime(it.toLong()) }
+    val sunSetTimeFormatted = sunset?.let { DateTimeHelper.toReadableTime(it.toLong()) }
+
 
     Column(
         modifier = Modifier
@@ -259,7 +307,7 @@ fun SunRiseSunSet() {
                 shape = RoundedCornerShape(10.dp)
             )
             .background(
-                Color.White,
+                brush = brush,
                 shape = RoundedCornerShape(10.dp)
             ),
 
@@ -295,14 +343,18 @@ fun SunRiseSunSet() {
                         color = Color.Black
                     )
                 )
-                Text(
-                    text = "06:00 am",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold
+
+                sunriseTimeFormatted?.let {
+                    Text(
+                        text = it,
+                        style = TextStyle(
+                            fontSize = 15.sp,
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
-                )
+                }
+
             }
             Column(
                 modifier = Modifier.weight(1f),
@@ -316,21 +368,29 @@ fun SunRiseSunSet() {
                         color = Color.Black,
                     )
                 )
-                Text(
-                    text = "06:00 pm",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold
+                sunSetTimeFormatted?.let {
+                    Text(
+                        text = it,
+                        style = TextStyle(
+                            fontSize = 15.sp,
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
-                )
+                }
             }
         }
     }
 }
 
 @Composable
-fun WindAndAir() {
+fun WindAndAir(
+    brush: Brush,
+    windSpeed: Double? = null,
+    pressure: Int? = null,
+    humidity: Int? = null,
+    visibility: Int? = null
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -340,7 +400,7 @@ fun WindAndAir() {
                 shape = RoundedCornerShape(10.dp)
             )
             .background(
-                Color.White,
+                brush = brush,
                 shape = RoundedCornerShape(10.dp)
             )
             .padding(
@@ -380,7 +440,7 @@ fun WindAndAir() {
                     )
                 )
                 Text(
-                    text = "12 km/h",
+                    text = "$windSpeed km/h",
                     style = TextStyle(
                         fontSize = 15.sp,
                         color = Color.Black,
@@ -401,7 +461,7 @@ fun WindAndAir() {
                     )
                 )
                 Text(
-                    text = "1024 hpa",
+                    text = "$pressure hpa",
                     style = TextStyle(
                         fontSize = 15.sp,
                         color = Color.Black,
@@ -435,7 +495,7 @@ fun WindAndAir() {
                     )
                 )
                 Text(
-                    text = "80%",
+                    text = "$humidity%",
                     style = TextStyle(
                         fontSize = 15.sp,
                         color = Color.Black,
@@ -456,7 +516,7 @@ fun WindAndAir() {
                     )
                 )
                 Text(
-                    text = "10 km",
+                    text = "$visibility km",
                     style = TextStyle(
                         fontSize = 15.sp,
                         color = Color.Black,
@@ -464,7 +524,6 @@ fun WindAndAir() {
                     )
                 )
             }
-
         }
     }
 }

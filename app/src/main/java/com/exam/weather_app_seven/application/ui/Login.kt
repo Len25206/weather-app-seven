@@ -43,11 +43,11 @@ import kotlinx.coroutines.launch
 fun Login(
     navController: NavController? = null
 ) {
-//    LaunchedEffect(Unit){
-//        CoroutineScope(Dispatchers.IO).launch {
-//            weatherService()
-//        }
-//    }
+    LaunchedEffect(Unit){
+        CoroutineScope(Dispatchers.IO).launch {
+            weatherService()
+        }
+    }
 
     Box(
         modifier = Modifier
