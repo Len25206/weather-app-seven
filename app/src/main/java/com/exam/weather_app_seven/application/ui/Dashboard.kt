@@ -1,8 +1,6 @@
 package com.exam.weather_app_seven.application.ui
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,21 +19,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.exam.weather_app_seven.R
-import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
-import androidx.compose.runtime.collectAsState
+import coil.compose.AsyncImage
 import com.exam.weather_app_seven.Utils.DateTimeHelper
+import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
 
 @Composable
 fun Dashboard(
@@ -53,11 +50,7 @@ fun Dashboard(
     val pressure = weatherState.value?.pressure
     val humidity = weatherState.value?.humidity
     val visibility = weatherState.value?.visibility
-
-
-
-    Log.e("TAG", "Dashboard: $location")
-
+    val weatherIcon = weatherState.value?.iconCode
 
     val morningGradientColors = listOf(
         Color(0xFFF3C9DA), // Dawn Pink
@@ -96,7 +89,8 @@ fun Dashboard(
             location = location,
             temperature = currentTemp,
             weatherDescription = weatherDescription,
-            country = country
+            country = country,
+            iconCode = weatherIcon
         )
         Spacer(
             modifier = Modifier
@@ -171,10 +165,11 @@ fun CurrentDate() {
 @Composable
 fun MainBoard(
     brush: Brush,
-    location: String? = null,
-    temperature: Double? = null,
-    weatherDescription: String? = null,
-    country: String? = null
+    location: String? = "",
+    temperature: Double? = 0.0,
+    weatherDescription: String? = "",
+    country: String? = "",
+    iconCode: String? = ""
 ) {
     Column(
         modifier = Modifier
@@ -232,7 +227,8 @@ fun MainBoard(
         Spacer(modifier = Modifier.height(15.dp))
         CurrentTemperature(
             temperature = temperature,
-            weatherDescription = weatherDescription
+            weatherDescription = weatherDescription,
+            iconCode = iconCode
         )
     }
 }
@@ -240,15 +236,15 @@ fun MainBoard(
 @SuppressLint("DefaultLocale")
 @Composable
 fun CurrentTemperature(
-    temperature: Double? = null,
-    weatherDescription: String? = null
+    temperature: Double? = 0.0,
+    weatherDescription: String? = "",
+    iconCode: String? = ""
 ) {
     val kelvin = 273.15
     val temperatureDouble = temperature ?: 0.0
     val celsius = temperatureDouble - kelvin
     val formattedTemp = String.format("%.1f", celsius)
-    Log.e("TAG", "CurrentTemperature: $temperatureDouble")
-    Log.e("TAG", "CurrentTemperature: $formattedTemp")
+    val icon = "https://openweathermap.org/img/wn/$iconCode@2x.png"
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -268,8 +264,8 @@ fun CurrentTemperature(
                 )
             )
             Spacer(modifier = Modifier.weight(1f))
-            Image(
-                painter = painterResource(id = R.mipmap.night_thuder_rain),
+            AsyncImage(
+                model = icon,
                 contentDescription = null,
                 modifier = Modifier
                     .size(100.dp),
@@ -291,8 +287,8 @@ fun CurrentTemperature(
 @Composable
 fun SunRiseSunSet(
     brush: Brush,
-    sunrise: String? = null,
-    sunset: String? = null
+    sunrise: String? = "",
+    sunset: String? = ""
 ) {
     val sunriseTimeFormatted = sunrise?.let { DateTimeHelper.toReadableTime(it.toLong()) }
     val sunSetTimeFormatted = sunset?.let { DateTimeHelper.toReadableTime(it.toLong()) }
@@ -386,10 +382,10 @@ fun SunRiseSunSet(
 @Composable
 fun WindAndAir(
     brush: Brush,
-    windSpeed: Double? = null,
-    pressure: Int? = null,
-    humidity: Int? = null,
-    visibility: Int? = null
+    windSpeed: Double? = 0.0,
+    pressure: Int? = 0,
+    humidity: Int? = 0,
+    visibility: Int? = 0
 ) {
     Column(
         modifier = Modifier

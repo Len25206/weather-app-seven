@@ -62,6 +62,7 @@ class WeatherViewModel @Inject constructor(
                         sysSunset = response.body()?.sys?.sunset.toString(),
                         pressure = response.body()?.main?.pressure,
                         humidity = response.body()?.main?.humidity,
+                        iconCode = response.body()?.weather?.get(0)?.icon ?: "",
                     )
                 )
             }

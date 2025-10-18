@@ -4,12 +4,12 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)  // ADD THIS LINE
     id("kotlin-kapt")  // or id("com.google.devtools.ksp") if using KSP
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
 }
 
 
 
 android {
-
 
     namespace = "com.exam.weather_app_seven"
     compileSdk = 36
@@ -22,6 +22,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+
     }
 
     buildTypes {
@@ -77,6 +79,20 @@ dependencies {
     implementation(libs.play.services.location)
 
     implementation(libs.kotlin.metadata.jvm)
+    implementation(libs.coil.compose)
+
+    implementation(platform("io.github.jan-tennert.supabase:bom:3.2.2"))
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.github.jan-tennert.supabase:auth-kt")
+    implementation("io.github.jan-tennert.supabase:storage-kt")
+    implementation("io.github.jan-tennert.supabase:realtime-kt")
+    implementation("io.ktor:ktor-client-cio:2.3.4")
+
+
+    // Ktor Client for network operations
+    implementation("io.ktor:ktor-client-android:3.0.0")
+    implementation("io.ktor:ktor-client-core:3.0.0")
+    implementation("io.ktor:ktor-client-plugins:2.3.4")
 
 }
 
