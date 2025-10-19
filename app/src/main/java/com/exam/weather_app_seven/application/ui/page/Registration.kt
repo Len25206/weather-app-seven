@@ -1,5 +1,9 @@
-package com.exam.weather_app_seven.application.ui
+package com.exam.weather_app_seven.application.ui.page
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,9 +24,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -31,26 +36,46 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.exam.weather_app_seven.application.Screen
+import com.exam.weather_app_seven.application.ui.dialog.CustomMessageDialog
+import com.exam.weather_app_seven.mvvm.model.User
 import com.exam.weather_app_seven.mvvm.viewModel.UserViewModel
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 
 @Composable
-fun Login(
+fun Registration(
     navController: NavController? = null,
     userViewModel: UserViewModel
 ) {
-    var email by rememberSaveable { mutableStateOf("lenlen.lorbis25@gmail.com") }
-    var password by rememberSaveable { mutableStateOf("Lennardlorbis") }
-    val user by userViewModel.user.collectAsState()
-    user?.let {
-        navController?.navigate(Screen.DashboardPage.route)
-        userViewModel.resetUser()
+    var userName by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
+    var dialogStatus by remember { mutableStateOf(false) }
+    var confirmPassword by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(showDialog) {
+        if (showDialog) {
+            delay(2000)
+            showDialog = false
+            dialogStatus = false
+            dialogMessage = ""
+            userName = ""
+            email = ""
+            password = ""
+            confirmPassword = ""
+
+        }
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +90,7 @@ fun Login(
             modifier = Modifier
                 .size(
                     width = 350.dp,
-                    height = 400.dp
+                    height = 500.dp
                 )
                 .shadow(
                     10.dp,
@@ -108,9 +133,18 @@ fun Login(
                     fontWeight = FontWeight.Bold
                 )
             )
-            Spacer(
+            OutlinedTextField(
+                value = userName,
+                onValueChange = {
+                    userName = it
+                },
+                label = {
+                    Text("Username")
+                },
+                shape = RoundedCornerShape(10.dp),
+                singleLine = true,
                 modifier = Modifier
-                    .height(20.dp)
+                    .fillMaxWidth()
             )
             OutlinedTextField(
                 value = email,
@@ -125,7 +159,6 @@ fun Login(
                 modifier = Modifier
                     .fillMaxWidth()
             )
-
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -134,7 +167,19 @@ fun Login(
                 label = {
                     Text("Password")
                 },
-                visualTransformation = PasswordVisualTransformation(),
+                shape = RoundedCornerShape(10.dp),
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = {
+                    confirmPassword = it
+                },
+                label = {
+                    Text("Confirm Password")
+                },
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
                 modifier = Modifier
@@ -144,7 +189,6 @@ fun Login(
                 modifier = Modifier
                     .height(20.dp)
             )
-
             Button(
                 modifier = Modifier
                     .size(
@@ -152,12 +196,40 @@ fun Login(
                         width = 350.dp
                     ),
                 onClick = {
-                    userViewModel.loginUser(
-                        email = email,
-                        password = password
+                    if (userName.isEmpty()) {
+                        dialogMessage = "Username cannot be empty"
+                        showDialog = true
+                        return@Button
+                    }
+                    if (email.isEmpty()) {
+                        dialogMessage = "Email cannot be empty"
+                        showDialog = true
+                        return@Button
+                    }
+                    if (password.isEmpty()) {
+                        dialogMessage = "Password cannot be empty"
+                        showDialog = true
+                        return@Button
+                    }
+                    if (confirmPassword.isEmpty()) {
+                        dialogMessage = "Confirm password cannot be empty"
+                        showDialog = true
+                        return@Button
+                    }
+                    if (password != confirmPassword) {
+                        dialogMessage = "Passwords do not match"
+                        showDialog = true
+                        return@Button
+                    }
+
+                    userViewModel.insertUser(
+                        user = User(
+                            userName = userName,
+                            password = password,
+                            email = email
+                        )
                     )
 
-//                    navController?.navigate(Screen.DashboardPage.route)
                 },
                 elevation = ButtonDefaults.buttonElevation(8.dp),
                 shape = RoundedCornerShape(10.dp),
@@ -169,11 +241,12 @@ fun Login(
                 )
             ) {
                 Text(
-                    "Login",
+                    "Create Account",
                     style = TextStyle(
                         color = Color.White
                     )
                 )
+
             }
             Spacer(
                 modifier = Modifier
@@ -187,7 +260,7 @@ fun Login(
 
             ) {
                 Text(
-                    "Don't have an account?",
+                    "Already have an account?",
                     style = TextStyle(
                         fontSize = 15.sp,
                         color = Color.Black
@@ -199,20 +272,36 @@ fun Login(
                 )
                 TextButton(
                     onClick = {
-                        navController?.navigate(Screen.RegisterPage.route)
+                        navController?.navigate(Screen.LoginPage.route)
                     }
-
                 ) {
                     Text(
-                        "Register here",
+                        "Sign in here",
                         style = TextStyle(
                             fontSize = 15.sp,
                             color = Color.Blue
                         )
                     )
                 }
+
             }
         }
 
+        AnimatedVisibility(
+            visible = showDialog,
+            enter = slideInVertically(
+                initialOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(500)
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(500)
+            )
+        ) {
+            CustomMessageDialog(
+                message = dialogMessage,
+                isSuccess = dialogStatus,
+            )
+        }
     }
 }

@@ -7,9 +7,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.exam.weather_app_seven.application.ui.Dashboard
-import com.exam.weather_app_seven.application.ui.Login
-import com.exam.weather_app_seven.application.ui.Registration
+import com.exam.weather_app_seven.application.ui.page.Dashboard
+import com.exam.weather_app_seven.application.ui.page.Login
+import com.exam.weather_app_seven.application.ui.page.Registration
 import com.exam.weather_app_seven.mvvm.viewModel.UserViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
 

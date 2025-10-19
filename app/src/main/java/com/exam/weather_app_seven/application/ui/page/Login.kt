@@ -1,4 +1,4 @@
-package com.exam.weather_app_seven.application.ui
+package com.exam.weather_app_seven.application.ui.page
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -30,23 +31,26 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.exam.weather_app_seven.application.Screen
-import com.exam.weather_app_seven.mvvm.model.User
 import com.exam.weather_app_seven.mvvm.viewModel.UserViewModel
 
+
 @Composable
-fun Registration(
+fun Login(
     navController: NavController? = null,
     userViewModel: UserViewModel
 ) {
-    var userName by rememberSaveable { mutableStateOf("") }
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
-    var confirmPassword by rememberSaveable { mutableStateOf("") }
-
+    var email by rememberSaveable { mutableStateOf("lenlen.lorbis25@gmail.com") }
+    var password by rememberSaveable { mutableStateOf("Lennardlorbis") }
+    val user by userViewModel.user.collectAsState()
+    user?.let {
+        navController?.navigate(Screen.DashboardPage.route)
+        userViewModel.resetUser()
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -61,7 +65,7 @@ fun Registration(
             modifier = Modifier
                 .size(
                     width = 350.dp,
-                    height = 500.dp
+                    height = 400.dp
                 )
                 .shadow(
                     10.dp,
@@ -104,18 +108,9 @@ fun Registration(
                     fontWeight = FontWeight.Bold
                 )
             )
-            OutlinedTextField(
-                value = userName,
-                onValueChange = {
-                    userName = it
-                },
-                label = {
-                    Text("Username")
-                },
-                shape = RoundedCornerShape(10.dp),
-                singleLine = true,
+            Spacer(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .height(20.dp)
             )
             OutlinedTextField(
                 value = email,
@@ -130,6 +125,7 @@ fun Registration(
                 modifier = Modifier
                     .fillMaxWidth()
             )
+
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -138,19 +134,7 @@ fun Registration(
                 label = {
                     Text("Password")
                 },
-                shape = RoundedCornerShape(10.dp),
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = {
-                    confirmPassword = it
-                },
-                label = {
-                    Text("Confirm Password")
-                },
+                visualTransformation = PasswordVisualTransformation(),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
                 modifier = Modifier
@@ -160,6 +144,7 @@ fun Registration(
                 modifier = Modifier
                     .height(20.dp)
             )
+
             Button(
                 modifier = Modifier
                     .size(
@@ -167,14 +152,12 @@ fun Registration(
                         width = 350.dp
                     ),
                 onClick = {
-                    userViewModel.insertUser(
-                        user = User(
-                            userName = userName,
-                            password = password,
-                            email = email
-                        )
+                    userViewModel.loginUser(
+                        email = email,
+                        password = password
                     )
-                    navController?.navigate(Screen.LoginPage.route)
+
+//                    navController?.navigate(Screen.DashboardPage.route)
                 },
                 elevation = ButtonDefaults.buttonElevation(8.dp),
                 shape = RoundedCornerShape(10.dp),
@@ -186,12 +169,11 @@ fun Registration(
                 )
             ) {
                 Text(
-                    "Create Account",
+                    "Login",
                     style = TextStyle(
                         color = Color.White
                     )
                 )
-
             }
             Spacer(
                 modifier = Modifier
@@ -205,7 +187,7 @@ fun Registration(
 
             ) {
                 Text(
-                    "Already have an account?",
+                    "Don't have an account?",
                     style = TextStyle(
                         fontSize = 15.sp,
                         color = Color.Black
@@ -217,19 +199,20 @@ fun Registration(
                 )
                 TextButton(
                     onClick = {
-                        navController?.navigate(Screen.LoginPage.route)
+                        navController?.navigate(Screen.RegisterPage.route)
                     }
+
                 ) {
                     Text(
-                        "Sign in here",
+                        "Register here",
                         style = TextStyle(
                             fontSize = 15.sp,
                             color = Color.Blue
                         )
                     )
                 }
-
             }
         }
+
     }
 }
