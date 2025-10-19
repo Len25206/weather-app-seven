@@ -1,7 +1,6 @@
 package com.exam.weather_app_seven.mvvm.model
 
-import com.google.gson.annotations.SerializedName
-import kotlinx.serialization.Serializable
+import java.util.UUID
 
 data class Weather(
     val lon: Double? = 0.0,
@@ -24,14 +23,11 @@ data class Weather(
     val iconCode: String? = ""
 )
 
-@Serializable
 data class User(
-    @SerializedName("user_name")
+    val id: String? = UUID.randomUUID().toString(),
     val userName: String? = "",
-    @SerializedName("email")
-    val userEmail: String? = "",
-    @SerializedName("password")
-    val userPassword: String? = ""
+    val password: String? = "",
+    val email: String? = ""
 )
 
 

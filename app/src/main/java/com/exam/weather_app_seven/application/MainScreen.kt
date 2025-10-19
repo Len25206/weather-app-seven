@@ -10,9 +10,8 @@ import androidx.navigation.compose.rememberNavController
 import com.exam.weather_app_seven.application.ui.Dashboard
 import com.exam.weather_app_seven.application.ui.Login
 import com.exam.weather_app_seven.application.ui.Registration
-import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
-import androidx.compose.runtime.collectAsState
 import com.exam.weather_app_seven.mvvm.viewModel.UserViewModel
+import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
 
 @Composable
 fun MainScreen() {
@@ -38,6 +37,7 @@ fun MainScreen() {
         {
             Registration(
                 navController,
+                userViewModel
             )
         }
         composable(Screen.DashboardPage.route) {

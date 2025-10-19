@@ -20,7 +20,6 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
 
@@ -44,6 +43,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -66,33 +66,28 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation(libs.androidx.navigation.compose)
 
-    // retrofit
+    // Retrofit
     implementation(libs.retrofit)
-// gson converter
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
 
+    // Hilt
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation (libs.hilt.android)
+    implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
+    // Location
     implementation(libs.play.services.location)
 
+    // Kotlin Metadata
     implementation(libs.kotlin.metadata.jvm)
+
+    // Coil for image loading
     implementation(libs.coil.compose)
 
-    implementation(platform("io.github.jan-tennert.supabase:bom:3.2.2"))
-    implementation("io.github.jan-tennert.supabase:postgrest-kt")
-    implementation("io.github.jan-tennert.supabase:auth-kt")
-    implementation("io.github.jan-tennert.supabase:storage-kt")
-    implementation("io.github.jan-tennert.supabase:realtime-kt")
-    implementation("io.ktor:ktor-client-cio:2.3.4")
-
-
-    // Ktor Client for network operations
-    implementation("io.ktor:ktor-client-android:3.0.0")
-    implementation("io.ktor:ktor-client-core:3.0.0")
-    implementation("io.ktor:ktor-client-plugins:2.3.4")
+    implementation("androidx.room:room-runtime:2.8.2")
+    kapt("androidx.room:room-compiler:2.8.2")
+    implementation("androidx.room:room-ktx:2.8.2")
 
 }
 
