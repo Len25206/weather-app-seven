@@ -2,7 +2,6 @@ package com.exam.weather_app_seven.application.ui.page
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.location.LocationProvider
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -41,12 +40,10 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.exam.weather_app_seven.Utils.DateTimeHelper
 import com.exam.weather_app_seven.Utils.LocationHelper
+import com.exam.weather_app_seven.application.Screen
 import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.permissions.shouldShowRationale
 
 @OptIn(ExperimentalPermissionsApi::class)
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -87,7 +84,7 @@ fun Dashboard(
             Text("Location permission is needed to show weather.")
         }
 
-        !locationPermissionsState.allPermissionsGranted  -> {
+        !locationPermissionsState.allPermissionsGranted -> {
             Text("Permission denied. Please enable it from settings.")
         }
     }
@@ -156,7 +153,8 @@ fun Dashboard(
             temperature = currentTemp,
             weatherDescription = weatherDescription,
             country = country,
-            iconCode = weatherIcon
+            iconCode = weatherIcon,
+            navController = navController
         )
         Spacer(
             modifier = Modifier
@@ -186,7 +184,7 @@ fun Dashboard(
                 .height(30.dp)
         )
         TextButton(
-            onClick = { /*TODO*/ },
+            onClick = { navController.navigate(Screen.LoginPage.route)},
             modifier = Modifier
                 .fillMaxWidth()
 
@@ -204,28 +202,56 @@ fun Dashboard(
 
 
 @Composable
-fun CurrentDate() {
+fun CurrentDate(
+    navController: NavController
+) {
     val currentDate = System.currentTimeMillis()
     val uiCurrentDate = DateTimeHelper.toReadableDate(currentDate)
     val week = DateTimeHelper.toWeek(currentDate)
-    Column(
-        modifier = Modifier.fillMaxWidth()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
     ) {
-        Text(
-            text = week.uppercase(),
-            style = TextStyle(
-                fontSize = 25.sp,
-                color = Color.Black
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            Text(
+                text = week.uppercase(),
+                style = TextStyle(
+                    fontSize = 25.sp,
+                    color = Color.Black
+                )
             )
-        )
-        Text(
-            text = uiCurrentDate,
-            style = TextStyle(
-                fontSize = 15.sp,
-                color = Color.Black
+            Text(
+                text = uiCurrentDate,
+                style = TextStyle(
+                    fontSize = 15.sp,
+                    color = Color.Black
+                )
             )
-        )
+        }
+
+        TextButton(
+            onClick = {
+                navController.navigate(Screen.LoginPage.route)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+
+        ) {
+            Text(
+                text = "LOGOUT",
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    color = Color.Black
+                )
+            )
+        }
     }
+
 }
 
 @Composable
@@ -235,7 +261,8 @@ fun MainBoard(
     temperature: Double? = 0.0,
     weatherDescription: String? = "",
     country: String? = "",
-    iconCode: String? = ""
+    iconCode: String? = "",
+    navController: NavController
 ) {
     Column(
         modifier = Modifier
@@ -289,7 +316,9 @@ fun MainBoard(
 
         }
         Spacer(modifier = Modifier.height(15.dp))
-        CurrentDate()
+        CurrentDate(
+            navController = navController
+        )
         Spacer(modifier = Modifier.height(15.dp))
         CurrentTemperature(
             temperature = temperature,

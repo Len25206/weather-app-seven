@@ -30,11 +30,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.exam.weather_app_seven.R
+import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
 
-@Preview
+
 @Composable
-fun WeatherHistory() {
+fun WeatherHistory(
+    navController: NavController,
+    weatherViewModel: WeatherViewModel
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
