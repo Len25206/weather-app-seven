@@ -1,6 +1,11 @@
 package com.exam.weather_app_seven.application.ui.page
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.location.LocationProvider
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,12 +24,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,13 +40,71 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.exam.weather_app_seven.Utils.DateTimeHelper
+import com.exam.weather_app_seven.Utils.LocationHelper
 import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 
+@OptIn(ExperimentalPermissionsApi::class)
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun Dashboard(
     navController: NavController,
     weatherViewModel: WeatherViewModel
 ) {
+    val context = LocalContext.current
+    val locationProvider = remember { LocationHelper(context) }
+    val locationPermissionsState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+    )
+    LaunchedEffect(true) {
+        locationPermissionsState.launchMultiplePermissionRequest()
+    }
+
+    when {
+        locationPermissionsState.allPermissionsGranted -> {
+            LaunchedEffect(Unit) {
+                locationProvider.getCurrentLocation { location ->
+                    if (location != null) {
+                        weatherViewModel.weatherService(
+                            lat = location.latitude.toString(),
+                            lon = location.longitude.toString()
+                        )
+                    } else {
+                        Log.e("Dashboard", "Location is null")
+                    }
+                }
+            }
+        }
+
+        locationPermissionsState.shouldShowRationale -> {
+            Text("Location permission is needed to show weather.")
+        }
+
+        !locationPermissionsState.allPermissionsGranted  -> {
+            Text("Permission denied. Please enable it from settings.")
+        }
+    }
+
+    LaunchedEffect(true) {
+        locationProvider.getCurrentLocation { location ->
+            if (location != null) {
+                weatherViewModel.weatherService(
+                    lat = location.latitude.toString(),
+                    lon = location.longitude.toString()
+                )
+            } else {
+                Log.e("Dashboard", "Location not available or permission denied")
+            }
+        }
+    }
+
     val weatherState = weatherViewModel.weather.collectAsState()
     val location = weatherState.value?.locationName
     val currentTemp = weatherState.value?.mainTemp
