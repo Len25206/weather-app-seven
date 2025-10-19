@@ -30,4 +30,22 @@ data class User(
     val email: String? = ""
 )
 
+data class Registration(
+    var showDialog: Boolean? = false,
+    var dialogStatus: Boolean? = false,
+    var messageDialog: String? = "",
+    var userName: String? = "",
+    var email: String? = "",
+    var password: String? = "",
+    var confirmPassword: String? = ""
+)
+
+data class UserLogin(
+    var showDialog: Boolean? = false,
+    var dialogStatus: Boolean? = false,
+    var messageDialog: String? = "",
+    var email: String? = "",
+    var password: String? = "",
+)
+
 
