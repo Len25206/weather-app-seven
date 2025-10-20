@@ -7,7 +7,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.exam.weather_app_seven.database.dao.UserDao
+import com.exam.weather_app_seven.database.dao.WeatherHistoryDao
 import com.exam.weather_app_seven.database.entity.UserEntity
+import com.exam.weather_app_seven.database.entity.WeatherHistoryEntity
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,14 +19,16 @@ import javax.inject.Singleton
 
 @Database(
     entities = [
-        UserEntity::class
+        UserEntity::class,
+        WeatherHistoryEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
+    abstract fun weatherHistoryDao(): WeatherHistoryDao
 
 
     companion object {
@@ -60,10 +64,6 @@ abstract class AppDatabase : RoomDatabase() {
     }
 }
 
-/**
- * ✅ Hilt Module to provide AppDatabase and TaskDao instances.
- * This allows you to @Inject AppDatabase or TaskDao anywhere in your app.
- */
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
@@ -76,7 +76,10 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideTaskDao(db: AppDatabase): UserDao = db.userDao()
+    fun provideUserDao(db: AppDatabase): UserDao = db.userDao()
 
+    @Provides
+    @Singleton
+    fun provideWeatherHistoryDao(db: AppDatabase): WeatherHistoryDao = db.weatherHistoryDao()
 
 }
