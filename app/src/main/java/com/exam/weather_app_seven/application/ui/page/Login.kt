@@ -1,5 +1,6 @@
 package com.exam.weather_app_seven.application.ui.page
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,7 +52,6 @@ import com.exam.weather_app_seven.mvvm.viewModel.UserLoginViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.UserViewModel
 import java.util.regex.Pattern
 
-
 @Composable
 fun Login(
     navController: NavController? = null,
@@ -59,6 +59,9 @@ fun Login(
     userLoginViewModel: UserLoginViewModel,
     userData: (User?) -> Unit
 ) {
+    BackHandler {
+        // Optionally handle back press
+    }
     val userLogin by userLoginViewModel.userLogin.collectAsState()
     val user by userViewModel.user.collectAsState()
 
@@ -72,7 +75,7 @@ fun Login(
     }
 
     LaunchedEffect(userLogin.showDialog) {
-        if (userLogin.showDialog == true) {
+        if (userLogin.showDialog!!) {
             kotlinx.coroutines.delay(2000)
             userLoginViewModel.setShowDialog(false)
             userLoginViewModel.setDialogStatus(false)
@@ -82,7 +85,7 @@ fun Login(
         }
     }
 
-    // Email validation function
+    // Email validation regex function
     fun isValidEmail(email: String): Boolean {
         val emailPattern = Pattern.compile(
             "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
@@ -139,7 +142,7 @@ fun Login(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // App Title
+            // App Title and subtitle
             Text(
                 text = "Weather App",
                 style = TextStyle(
@@ -148,7 +151,6 @@ fun Login(
                     fontWeight = FontWeight.Bold
                 )
             )
-
             Text(
                 text = "Get current weather and history",
                 style = TextStyle(
@@ -198,7 +200,7 @@ fun Login(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Email Field with validation
+                    // Email Input with validation
                     OutlinedTextField(
                         value = userLogin.email ?: "",
                         onValueChange = {
@@ -236,7 +238,7 @@ fun Login(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Password Field
+                    // Password Input
                     OutlinedTextField(
                         value = userLogin.password ?: "",
                         onValueChange = { userLoginViewModel.setPassword(it) },
@@ -262,32 +264,38 @@ fun Login(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Login Button
+                    // Login Button with success/failure handling
                     Button(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
-                            .shadow(8.dp, RoundedCornerShape(15.dp)),
+                            .height(56.dp),
                         onClick = {
-                            if (isValidEmail(userLogin.email ?: "")) {
-                                userLoginViewModel.validateLogin(
-                                    onSuccess = {
-                                        userViewModel.loginUser(
-                                            email = userLogin.email ?: "",
-                                            password = userLogin.password ?: ""
-                                        )
-                                    },
-                                    onFailure = { message ->
-                                        userLoginViewModel.setDialogStatus(false)
-                                        userLoginViewModel.setMessageDialog(message)
-                                        userLoginViewModel.setShowDialog(true)
-                                    }
-                                )
-                            } else {
+                            if (!isEmailValid || userLogin.email.isNullOrBlank() || userLogin.password.isNullOrBlank()) {
                                 userLoginViewModel.setDialogStatus(false)
-                                userLoginViewModel.setMessageDialog("Please enter a valid email address")
+                                userLoginViewModel.setMessageDialog("Please enter valid email and password")
                                 userLoginViewModel.setShowDialog(true)
+                                return@Button
                             }
+                            userLoginViewModel.validateLogin(
+                                onSuccess = {
+                                    userViewModel.loginUser(
+                                        email = userLogin.email ?: "",
+                                        password = userLogin.password ?: "",
+                                        onResult = { success ->
+                                            if (!success) {
+                                                userLoginViewModel.setDialogStatus(false)
+                                                userLoginViewModel.setMessageDialog("Account does not exist or incorrect credentials")
+                                                userLoginViewModel.setShowDialog(true)
+                                            }
+                                        }
+                                    )
+                                },
+                                onFailure = { message ->
+                                    userLoginViewModel.setDialogStatus(false)
+                                    userLoginViewModel.setMessageDialog(message)
+                                    userLoginViewModel.setShowDialog(true)
+                                }
+                            )
                         },
                         shape = RoundedCornerShape(15.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -296,7 +304,7 @@ fun Login(
                             disabledContainerColor = Color(0xFFBDC3C7),
                             disabledContentColor = Color.White
                         ),
-                        elevation = ButtonDefaults.buttonElevation(0.dp),
+                        elevation = ButtonDefaults.buttonElevation(8.dp),
                         enabled = isEmailValid &&
                                 !userLogin.email.isNullOrEmpty() &&
                                 !userLogin.password.isNullOrEmpty()
@@ -313,7 +321,7 @@ fun Login(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Register Link
+                    // Navigation to registration screen
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
@@ -344,7 +352,7 @@ fun Login(
             Spacer(modifier = Modifier.height(40.dp))
         }
 
-        // Dialog for messages
+        // Dialog for login messages
         androidx.compose.animation.AnimatedVisibility(
             visible = userLogin.showDialog == true,
             enter = androidx.compose.animation.slideInVertically(
@@ -363,3 +371,4 @@ fun Login(
         }
     }
 }
+

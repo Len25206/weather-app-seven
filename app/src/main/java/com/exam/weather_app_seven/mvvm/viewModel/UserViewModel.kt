@@ -27,9 +27,15 @@ class UserViewModel @Inject constructor(
         }
     }
 
-    fun loginUser(email: String, password: String) {
+    fun loginUser(email: String, password: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
-            userRepository.getUserByEmailAndPassword(email, password)
+            val user = userRepository.getUserByEmailAndPassword(email, password)
+            if (user != null) {
+                userRepository.setUser(user)
+                onResult(true)
+            } else {
+                onResult(false)
+            }
         }
     }
 

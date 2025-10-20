@@ -31,15 +31,19 @@ class UserRepository @Inject constructor(
         )
     }
 
-    suspend fun getUserByEmailAndPassword(email: String, password: String) {
+    suspend fun getUserByEmailAndPassword(email: String, password: String): User? {
         val userEntity = userService.getAllUser(email, password)
-        if (userEntity != null) {
-            _user.value = User(
+        return if (userEntity != null) {
+            val foundUser = User(
                 id = userEntity.id,
                 userName = userEntity.userName,
                 password = userEntity.password,
                 email = userEntity.email
             )
+            _user.value = foundUser
+            foundUser
+        } else {
+            null
         }
     }
 
@@ -50,5 +54,4 @@ class UserRepository @Inject constructor(
         _user.value = null
         userList.clear()
     }
-    // Removed getUser() function to avoid JVM signature clash error
 }

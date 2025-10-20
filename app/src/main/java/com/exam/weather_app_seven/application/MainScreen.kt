@@ -63,6 +63,7 @@ fun MainScreen() {
                 navController,
                 weatherViewModel,
                 userData,
+                userLoginViewModel,
                 weatherHistoryViewModel
             )
         }

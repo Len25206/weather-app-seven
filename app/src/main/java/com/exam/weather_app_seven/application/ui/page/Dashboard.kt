@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -56,6 +57,8 @@ import com.exam.weather_app_seven.application.Screen
 import com.exam.weather_app_seven.database.entity.WeatherHistoryEntity
 import com.exam.weather_app_seven.mvvm.model.User
 import com.exam.weather_app_seven.mvvm.model.WeatherHistory
+import com.exam.weather_app_seven.mvvm.viewModel.UserLoginViewModel
+import com.exam.weather_app_seven.mvvm.viewModel.UserViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.WeatherHistoryViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
 import com.exam.weather_app_seven.ui.theme.WhiteBackground
@@ -72,8 +75,12 @@ fun Dashboard(
     navController: NavController,
     weatherViewModel: WeatherViewModel,
     user: User? = null,
+    userLoginViewModel: UserLoginViewModel,
     weatherHistoryViewModel: WeatherHistoryViewModel
 ) {
+    BackHandler {
+
+    }
     val context = LocalContext.current
     val locationProvider = remember { LocationHelper(context) }
     val locationPermissionsState = rememberMultiplePermissionsState(
@@ -203,7 +210,10 @@ fun Dashboard(
             verticalArrangement = Arrangement.Top
         ) {
             // Header with logout
-            LogoutHeader(navController = navController)
+            LogoutHeader(
+                navController = navController,
+                userLoginViewModel
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -306,14 +316,23 @@ fun Dashboard(
 }
 
 @Composable
-fun LogoutHeader(navController: NavController) {
+fun LogoutHeader(
+    navController: NavController,
+    userLoginViewModel: UserLoginViewModel
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextButton(
-            onClick = { navController.navigate(Screen.LoginPage.route) }
+            onClick = {
+                userLoginViewModel.setEmail("")
+                userLoginViewModel.setPassword("")
+                navController.navigate(Screen.LoginPage.route) {
+                    popUpTo(Screen.DashboardPage.route) { inclusive = true }
+                }
+            }
         ) {
             Text(
                 text = "🚪 Logout",

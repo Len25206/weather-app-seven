@@ -1,6 +1,7 @@
 package com.exam.weather_app_seven.application.ui.page
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -62,6 +63,9 @@ fun WeatherHistory(
     weatherHistoryViewModel: WeatherHistoryViewModel,
     user: User? = null,
 ) {
+    BackHandler {
+
+    }
     val weatherHistoryList by weatherHistoryViewModel.weatherHistory.collectAsState()
     LaunchedEffect(Unit) {
         weatherHistoryViewModel.setWeatherHistory(user?.id ?: "")

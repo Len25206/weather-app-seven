@@ -1,5 +1,6 @@
 package com.exam.weather_app_seven.application.ui.page
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -65,6 +66,8 @@ fun Registration(
     userViewModel: UserViewModel,
     registrationViewModel: RegistrationViewModel
 ) {
+    BackHandler {
+    }
     val userName by registrationViewModel.userName.collectAsState()
     val email by registrationViewModel.email.collectAsState()
     val password by registrationViewModel.password.collectAsState()
