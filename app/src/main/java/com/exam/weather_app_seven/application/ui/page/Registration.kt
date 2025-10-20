@@ -59,7 +59,6 @@ import com.exam.weather_app_seven.mvvm.model.User
 import com.exam.weather_app_seven.mvvm.viewModel.RegistrationViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.UserViewModel
 import java.util.regex.Pattern
-
 @Composable
 fun Registration(
     navController: NavController? = null,
@@ -67,17 +66,19 @@ fun Registration(
     registrationViewModel: RegistrationViewModel
 ) {
     BackHandler {
+        // Optional back press handling
     }
     val userName by registrationViewModel.userName.collectAsState()
     val email by registrationViewModel.email.collectAsState()
     val password by registrationViewModel.password.collectAsState()
     val confirmPassword by registrationViewModel.confirmPassword.collectAsState()
+    val apiKey by registrationViewModel.apiKey.collectAsState()
     val showDialog by registrationViewModel.showDialog.collectAsState()
     val dialogMessage by registrationViewModel.dialogMessage.collectAsState()
     val dialogStatus by registrationViewModel.dialogStatus.collectAsState()
 
-    // Email validation state
     var isEmailValid by remember { mutableStateOf(true) }
+    var isApiKeyValid by remember { mutableStateOf(true) }
 
     LaunchedEffect(showDialog) {
         if (showDialog) {
@@ -86,10 +87,10 @@ fun Registration(
             registrationViewModel.setDialogStatus(false)
             registrationViewModel.setDialogMessage("")
             registrationViewModel.clearForm()
+            registrationViewModel.setApiKey("")
         }
     }
 
-    // Email validation function
     fun isValidEmail(email: String): Boolean {
         val emailPattern = Pattern.compile(
             "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
@@ -124,7 +125,6 @@ fun Registration(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Weather Icon Header
             Box(
                 modifier = Modifier
                     .size(100.dp)
@@ -139,15 +139,11 @@ fun Registration(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "🌤️",
-                    style = TextStyle(fontSize = 60.sp)
-                )
+                Text(text = "🌤️", style = TextStyle(fontSize = 60.sp))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // App Title
             Text(
                 text = "Weather App",
                 style = TextStyle(
@@ -156,7 +152,6 @@ fun Registration(
                     fontWeight = FontWeight.Bold
                 )
             )
-
             Text(
                 text = "Get current weather and history",
                 style = TextStyle(
@@ -169,7 +164,6 @@ fun Registration(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Registration Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -205,6 +199,37 @@ fun Registration(
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
+
+                    // API Key Field (Required)
+                    OutlinedTextField(
+                        value = apiKey,
+                        onValueChange = {
+                            registrationViewModel.setApiKey(it)
+                            isApiKeyValid = it.isNotBlank()
+                        },
+                        label = { Text("API Key (required)") },
+                        shape = RoundedCornerShape(15.dp),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = if (isApiKeyValid) Color(0xFF4A90E2) else Color(0xFFE74C3C),
+                            unfocusedBorderColor = if (isApiKeyValid) Color(0xFFBDC3C7) else Color(0xFFE74C3C),
+                            focusedLabelColor = if (isApiKeyValid) Color(0xFF4A90E2) else Color(0xFFE74C3C),
+                            cursorColor = Color(0xFF4A90E2)
+                        ),
+                        isError = !isApiKeyValid,
+                        supportingText = {
+                            if (!isApiKeyValid) {
+                                Text(
+                                    text = "API Key is required",
+                                    color = Color(0xFFE74C3C),
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     // Username Field
                     OutlinedTextField(
@@ -321,7 +346,7 @@ fun Registration(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Create Account Button
+                    // Create Account Button with API key and email validation
                     Button(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -333,33 +358,42 @@ fun Registration(
                         ),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
                         onClick = {
-                            if (isValidEmail(email)) {
-                                registrationViewModel.validateAndRegister(
-                                    onSuccess = {
-                                        userViewModel.insertUser(
-                                            User(
-                                                userName = userName,
-                                                password = password,
-                                                email = email
-                                            )
-                                        )
-                                        registrationViewModel.setDialogStatus(true)
-                                        registrationViewModel.setDialogMessage("Account created successfully")
-                                        registrationViewModel.showDialog(true)
-                                    },
-                                    onFailure = { message ->
-                                        registrationViewModel.setDialogStatus(false)
-                                        registrationViewModel.setDialogMessage(message)
-                                        registrationViewModel.showDialog(true)
-                                    }
-                                )
-                            } else {
+                            if (!isApiKeyValid || apiKey.isBlank()) {
+                                registrationViewModel.setDialogStatus(false)
+                                registrationViewModel.setDialogMessage("API Key is required")
+                                registrationViewModel.showDialog(true)
+                                return@Button
+                            }
+                            if (!isEmailValid) {
                                 registrationViewModel.setDialogStatus(false)
                                 registrationViewModel.setDialogMessage("Please enter a valid email address")
                                 registrationViewModel.showDialog(true)
+                                return@Button
                             }
+                            registrationViewModel.validateAndRegister(
+                                onSuccess = {
+                                    userViewModel.insertUser(
+                                        User(
+                                            userName = userName,
+                                            password = password,
+                                            email = email,
+                                            apiKey = apiKey
+                                        )
+                                    )
+                                    registrationViewModel.setDialogStatus(true)
+                                    registrationViewModel.setDialogMessage("Account created successfully")
+                                    registrationViewModel.showDialog(true)
+                                },
+                                onFailure = { message ->
+                                    registrationViewModel.setDialogStatus(false)
+                                    registrationViewModel.setDialogMessage(message)
+                                    registrationViewModel.showDialog(true)
+                                }
+                            )
                         },
-                        enabled = isEmailValid && email.isNotEmpty() && userName.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()
+                        enabled = isEmailValid && isApiKeyValid &&
+                                apiKey.isNotBlank() && email.isNotEmpty() &&
+                                userName.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()
                     ) {
                         Text(
                             "Create Account",
@@ -370,7 +404,6 @@ fun Registration(
                             )
                         )
                     }
-
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Login Link
@@ -400,7 +433,6 @@ fun Registration(
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(40.dp))
         }
 
@@ -422,3 +454,4 @@ fun Registration(
         }
     }
 }
+

@@ -26,7 +26,8 @@ class UserRepository @Inject constructor(
                 id = user.id ?: "",
                 userName = user.userName ?: "",
                 password = user.password ?: "",
-                email = user.email ?: ""
+                email = user.email ?: "",
+                apiKey = user.apiKey ?: ""
             )
         )
     }
@@ -38,7 +39,8 @@ class UserRepository @Inject constructor(
                 id = userEntity.id,
                 userName = userEntity.userName,
                 password = userEntity.password,
-                email = userEntity.email
+                email = userEntity.email,
+                apiKey = userEntity.apiKey
             )
             _user.value = foundUser
             foundUser

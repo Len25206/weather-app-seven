@@ -27,7 +27,8 @@ data class User(
     val id: String? = UUID.randomUUID().toString(),
     var userName: String? = "",
     var password: String? = "",
-    var email: String? = ""
+    var email: String? = "",
+    var apiKey: String? = ""
 )
 
 data class Registration(

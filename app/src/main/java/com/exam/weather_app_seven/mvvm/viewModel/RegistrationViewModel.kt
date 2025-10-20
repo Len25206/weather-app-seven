@@ -32,6 +32,13 @@ class RegistrationViewModel @Inject constructor() : ViewModel() {
     private val _dialogStatus = MutableStateFlow(false)
     val dialogStatus: StateFlow<Boolean> = _dialogStatus.asStateFlow()
 
+    private val _apiKey = MutableStateFlow("")
+    val apiKey: StateFlow<String> = _apiKey.asStateFlow()
+
+    fun setApiKey(value: String) {
+        _apiKey.value = value
+    }
+
     fun setUserName(value: String) {
         _userName.value = value
     }

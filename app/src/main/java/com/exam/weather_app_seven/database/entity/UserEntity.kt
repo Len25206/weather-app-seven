@@ -14,5 +14,7 @@ data class UserEntity(
     @ColumnInfo(name = "password")
     val password: String,
     @ColumnInfo(name = "email")
-    val email: String
+    val email: String,
+    @ColumnInfo(name = "api_key")
+    val apiKey: String
 )

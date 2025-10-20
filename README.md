@@ -5,6 +5,21 @@ Weather App provides real-time weather updates and history tracking based on use
 
 ---
 
+## API Key Information
+This app requires an API key from OpenWeather to retrieve weather data.
+
+- **How to get an API Key:**  
+  Register for a free account and obtain your API key here: [https://home.openweathermap.org/](https://home.openweathermap.org/)
+
+- **Pre-registered Working API Keys (for testing/demo):**
+  - `bb1f7e5036ab3b59255d9fc1caa97792`
+  - `b7a9e2c6b41bcbfae851a9d28b3cae6f`
+
+- **Where to put the API Key:**  
+  The API key must be inserted during **account registration** in the app. The registration screen includes a required API key input field where users provide their key to enable weather API integration.
+
+---
+
 ## Modules and Functions
 
 ### Dashboard
@@ -12,78 +27,76 @@ Weather App provides real-time weather updates and history tracking based on use
   - Requests location permissions using Accompanist Permissions.
   - Fetches GPS location with `LocationHelper`.
   - Calls weather API through `WeatherViewModel` with current coordinates.
-  - Collects weather state and displays: location, temperature (in Celsius), weather description, country, sunrise/sunset, wind speed, pressure, humidity, visibility, and weather icon dynamically loaded based on icon code.
-  - Background gradient dynamically switches between morning and night colors based on system time (6 PM to 6 AM considered night).
-  - Inserts weather data into local `WeatherHistory` database every 60 seconds using reactive state and fresh data reading to avoid null values.
+  - Collects weather state and displays location, temperature (in Celsius), weather description, country, sunrise/sunset, wind speed, pressure, humidity, visibility, and weather icon loaded dynamically based on icon code.
+  - Background gradient switches between morning and night colors based on system time (6 PM to 6 AM considered night).
+  - Inserts weather data into local `WeatherHistory` database every 60 seconds using fresh reactive state to avoid null data.
   - Provides navigation to Weather History screen.
 
 - **LogoutHeader**  
-  Displays a logout text button navigating to Login screen.
+  Displays a logout button navigating to Login screen.
 
 - **LocationDateCard**  
-  Displays location and current date with real-time time update every second.
+  Shows location and current real-time date with second updates.
 
 - **MainTemperatureCard**  
-  Shows weather temperature and description along with corresponding weather icon in a styled card.
+  Displays temperature, weather description, and icon in a styled card.
 
 - **SunRiseSunSet**  
-  Displays formatted sunrise and sunset times.
+  Shows formatted sunrise and sunset times.
 
 - **WeatherDetailsGrid**  
-  Shows wind speed, pressure, humidity, and visibility in a clean card layout.
+  Displays wind speed, pressure, humidity, and visibility.
 
 ### WeatherHistory
-- Displays a list of previously saved weather data from local database.
-- Background changes between day and night gradients based on system time.
-- Includes back navigation and a button to add current weather data.
-- Each item shows weather icon, location, timestamp, and description in cards.
+- Displays saved weather history in a scrollable list with dynamic backgrounds.
+- Supports back navigation and add current weather button.
+- Each item shows weather icon, location, timestamp, and description.
 
 - **WeatherItem**  
-  Displays one weather history record with dynamic icon loading and styled info.
+  Styled card for individual weather history entry.
 
 ### Login
-- Local user login screen using Room database (no external auth).
-- Email input has regex-based real-time validation with visual error feedback.
-- Background changes dynamically based on system time for day/night theme.
-- Shows dialogs for login success or failure.
-- Navigates to Registration or Dashboard accordingly.
+- Local user login with Room database storage (no external auth).
+- Includes real-time email validation with error feedback.
+- Background adapts dynamically to day/night theme.
+- Shows dialogs for login success or failure including "account does not exist".
+- Navigates to Registration or Dashboard upon login state change.
+
+- **API Key Requirement Added:**  
+  An API key input field is mandatory and validated before login.
 
 ### Registration
-- Local user registration screen stored entirely on the device using Room.
-- Inputs: username, email, password, confirm password.
-- Real-time email format validation with error messages.
-- Dynamic time-based backgrounds matching other screens.
-- Shows dialogs for success or failure and clears inputs on success.
-- Navigates back to Login screen.
+- Local user registration stored entirely on device using Room.
+- Includes username, email, password, confirm password, and **required API key** inputs.
+- Real-time validation for email format and API key presence with error messages.
+- Dynamic day/night backgrounds consistent with app theme.
+- Shows dialogs for success/failure and clears form after successful registration.
+- Navigates to Login page after successful account creation.
 
 ### Utility Functions
-- **Email Validation**  
-  Regex pattern ensuring valid email format.
-- **LocationHelper**  
-  Fetches device GPS coordinates.
-- **DateTimeHelper**  
-  Converts epoch timestamps to human-readable date/time formats.
-- **Background Gradient**  
-  Time-based gradient switching using Compose coroutines.
-- **Dynamic Weather Icons**  
-  Load icons from OpenWeatherMap API icon code dynamically.
+- **Email Validation:** Regex pattern validation.
+- **LocationHelper:** Fetches device GPS location.
+- **DateTimeHelper:** Converts timestamps to readable date/time.
+- **Background Gradient:** Coroutine-based time-driven gradient switching.
+- **Dynamic Weather Icons:** Loads icons from OpenWeatherMap API codes.
 
 ---
 
 ## Architecture Notes
-- Authentication is implemented locally via Room database, ensuring privacy and offline support.
-- Weather icon selection is dynamic based on codes fetched from weather API.
-- Background changes provide contextual day/night theme for consistent UX across app.
-- Weather data insertion into history database is managed reactively and carefully avoids stale or null data by capturing fresh state inside coroutines.
+- Authentication is completely local via Room database.
+- Weather icons dynamically selected based on API data.
+- Backgrounds switch contextually for day/night for consistent UX.
+- History data insertions use reactive fresh state to avoid stale or null inserts.
 
 ---
 
 ## Usage
-- The app requests location permissions on launch to show weather.
-- Users can register and login locally.
-- Dashboard updates weather hourly and saves history every minute.
-- Users can view history with dynamic visuals.
+- API key must be entered when registering a user account.
+- App requests location permission at launch to fetch weather data.
+- Login requires valid email, password, and API key.
+- Dashboard fetches weather based on location and user’s API key, saving history.
+- History tab shows records saved during app usage with matching time-based backgrounds.
 
 ---
 
-This document summarizes key components and detailed functions of your Weather App, highlighting the local authentication architecture, UI dynamics, and data handling for clarity and maintainability.
+This documentation clarifies where and how to insert the API key (on registration), describes major modules, and details the app flow integrating local authentication and weather API usage.

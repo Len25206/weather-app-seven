@@ -100,7 +100,8 @@ fun Dashboard(
                     if (location != null) {
                         weatherViewModel.weatherService(
                             lat = location.latitude.toString(),
-                            lon = location.longitude.toString()
+                            lon = location.longitude.toString(),
+                            appid = user?.apiKey ?: ""
                         )
                     } else {
                         Log.e("Dashboard", "Location is null")
@@ -123,7 +124,8 @@ fun Dashboard(
             if (location != null) {
                 weatherViewModel.weatherService(
                     lat = location.latitude.toString(),
-                    lon = location.longitude.toString()
+                    lon = location.longitude.toString(),
+                    appid = user?.apiKey ?: ""
                 )
             } else {
                 Log.e("Dashboard", "Location not available or permission denied")

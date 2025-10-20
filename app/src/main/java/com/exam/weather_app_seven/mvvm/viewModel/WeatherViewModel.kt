@@ -20,13 +20,16 @@ class WeatherViewModel @Inject constructor(
     val weather = weatherRepository.getWeather()
     private val weatherService = WeatherClientRetrofit.instance
 
-
-
-    fun weatherService(lat: String, lon: String) {
+    fun weatherService(
+        lat: String,
+        lon: String,
+        appid: String
+    ) {
+        Log.e("WeatherViewModel", "weatherService called $appid")
         weatherService.getWeather(
             lat = lat,
             lon = lon,
-            appid = "bb1f7e5036ab3b59255d9fc1caa97792"
+            appid = appid
         ).enqueue(object : Callback<WeatherResponse?> {
             override fun onResponse(
                 call: Call<WeatherResponse?>,
@@ -66,7 +69,6 @@ class WeatherViewModel @Inject constructor(
             }
         })
     }
-
 
 
 }
