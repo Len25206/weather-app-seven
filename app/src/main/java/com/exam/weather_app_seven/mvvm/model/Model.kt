@@ -25,9 +25,9 @@ data class Weather(
 
 data class User(
     val id: String? = UUID.randomUUID().toString(),
-    val userName: String? = "",
-    val password: String? = "",
-    val email: String? = ""
+    var userName: String? = "",
+    var password: String? = "",
+    var email: String? = ""
 )
 
 data class Registration(
@@ -47,5 +47,15 @@ data class UserLogin(
     var email: String? = "",
     var password: String? = "",
 )
+
+data class WeatherHistory(
+    val id: String? = UUID.randomUUID().toString(),
+    val userId: String? = "",
+    val location: String? = "",
+    val dateAndTime: Long? = 0,
+    val weatherDescription: String? = "",
+    val iconCode: String? = ""
+)
+
 
 

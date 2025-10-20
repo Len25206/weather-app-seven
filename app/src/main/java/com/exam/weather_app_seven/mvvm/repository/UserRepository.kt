@@ -44,7 +44,11 @@ class UserRepository @Inject constructor(
     }
 
     fun resetUser() {
+        _user.value?.userName = ""
+        _user.value?.password = ""
+        _user.value?.email = ""
         _user.value = null
+        userList.clear()
     }
     // Removed getUser() function to avoid JVM signature clash error
 }

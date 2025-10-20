@@ -17,6 +17,7 @@ import com.exam.weather_app_seven.mvvm.model.User
 import com.exam.weather_app_seven.mvvm.viewModel.RegistrationViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.UserLoginViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.UserViewModel
+import com.exam.weather_app_seven.mvvm.viewModel.WeatherHistoryViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -27,6 +28,7 @@ fun MainScreen() {
     val userViewModel: UserViewModel = hiltViewModel()
     val registrationViewModel: RegistrationViewModel = hiltViewModel()
     val userLoginViewModel: UserLoginViewModel = hiltViewModel()
+    val weatherHistoryViewModel: WeatherHistoryViewModel = hiltViewModel()
     var userData: User? = null
 
 
@@ -60,14 +62,15 @@ fun MainScreen() {
             Dashboard(
                 navController,
                 weatherViewModel,
-                userData
+                userData,
+                weatherHistoryViewModel
             )
         }
 
         composable(Screen.HistoryPage.route) {
             WeatherHistory(
                 navController,
-                weatherViewModel,
+                weatherHistoryViewModel,
                 userData
             )
         }

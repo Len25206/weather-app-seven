@@ -14,7 +14,7 @@ data class WeatherHistoryEntity(
     @ColumnInfo(name = "location")
     val location: String,
     @ColumnInfo(name = "dateAndTime")
-    val dateAndTime: String,
+    val dateAndTime: Long,
     @ColumnInfo(name = "weather_description")
     val weatherDescription: String,
     @ColumnInfo(name = "icon_code")

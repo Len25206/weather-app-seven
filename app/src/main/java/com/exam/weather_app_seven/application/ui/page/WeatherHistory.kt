@@ -1,5 +1,6 @@
 package com.exam.weather_app_seven.application.ui.page
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,13 +15,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -28,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,9 +46,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.exam.weather_app_seven.R
+import com.exam.weather_app_seven.Utils.DateTimeHelper
+import com.exam.weather_app_seven.database.entity.WeatherHistoryEntity
 import com.exam.weather_app_seven.mvvm.model.User
-import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
+import com.exam.weather_app_seven.mvvm.viewModel.WeatherHistoryViewModel
 import kotlinx.coroutines.delay
 import java.util.Calendar
 
@@ -55,9 +59,14 @@ import java.util.Calendar
 @Composable
 fun WeatherHistory(
     navController: NavController,
-    weatherViewModel: WeatherViewModel,
+    weatherHistoryViewModel: WeatherHistoryViewModel,
     user: User? = null,
 ) {
+    val weatherHistoryList by weatherHistoryViewModel.weatherHistory.collectAsState()
+    LaunchedEffect(Unit) {
+        weatherHistoryViewModel.setWeatherHistory(user?.id ?: "")
+    }
+
     // Time-based background state
     var isNightTime by remember { mutableStateOf(false) }
 
@@ -132,46 +141,15 @@ fun WeatherHistory(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Add Current Weather Button
-            Button(
-                onClick = { /* TODO */ },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(8.dp, RoundedCornerShape(15.dp)),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = Color(0xFF4A90E2)
-                ),
-                shape = RoundedCornerShape(15.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                ) {
-                    Text(
-                        text = "➕",
-                        style = TextStyle(fontSize = 20.sp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "ADD CURRENT WEATHER",
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
             // History List
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(10) {
-                    WeatherItem()
+                items(
+                    items = weatherHistoryList,
+                    key = { weatherHistory -> weatherHistory.id }
+                ) {
+                    WeatherItem(it)
                 }
                 item {
                     Spacer(modifier = Modifier.height(20.dp))
@@ -181,9 +159,11 @@ fun WeatherHistory(
     }
 }
 
-@Preview
 @Composable
-fun WeatherItem() {
+fun WeatherItem(
+    weatherHistoryEntity: WeatherHistoryEntity
+) {
+    val icon = "https://openweathermap.org/img/wn/${weatherHistoryEntity.iconCode}@4x.png"
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -215,8 +195,8 @@ fun WeatherItem() {
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.mipmap.night_thuder_rain),
+                AsyncImage(
+                    model = icon,
                     contentDescription = null,
                     modifier = Modifier.size(50.dp)
                 )
@@ -242,7 +222,7 @@ fun WeatherItem() {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Location",
+                        text = weatherHistoryEntity.location,
                         style = TextStyle(
                             fontSize = 20.sp,
                             color = Color(0xFF2C3E50),
@@ -262,7 +242,7 @@ fun WeatherItem() {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Oct 20, 2023, 06:00 PM",
+                        text = DateTimeHelper.toReadableDate(weatherHistoryEntity.dateAndTime),
                         style = TextStyle(
                             fontSize = 13.sp,
                             color = Color(0xFF7F8C8D)
@@ -279,7 +259,7 @@ fun WeatherItem() {
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "Clouds",
+                        text = weatherHistoryEntity.weatherDescription,
                         style = TextStyle(
                             fontSize = 13.sp,
                             color = Color(0xFF34495E),

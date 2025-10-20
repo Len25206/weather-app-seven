@@ -14,17 +14,8 @@ class WeatherRepository @Inject constructor() {
     private val weatherList = mutableListOf<Weather>()
     private val _currentWeather = MutableStateFlow<Weather?>(null)
     val currentWeather: StateFlow<Weather?> = _currentWeather.asStateFlow()
-
-    fun addWeather(weather: Weather) {
-        weatherList.add(weather)
-    }
-
     fun setWeather(weather: Weather) {
         _currentWeather.value = weather
-    }
-
-    fun getWeatherList(): List<Weather> {
-        return weatherList
     }
 
     fun getWeather(): StateFlow<Weather?> {

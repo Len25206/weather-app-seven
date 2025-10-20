@@ -53,7 +53,10 @@ import coil.compose.AsyncImage
 import com.exam.weather_app_seven.Utils.DateTimeHelper
 import com.exam.weather_app_seven.Utils.LocationHelper
 import com.exam.weather_app_seven.application.Screen
+import com.exam.weather_app_seven.database.entity.WeatherHistoryEntity
 import com.exam.weather_app_seven.mvvm.model.User
+import com.exam.weather_app_seven.mvvm.model.WeatherHistory
+import com.exam.weather_app_seven.mvvm.viewModel.WeatherHistoryViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
 import com.exam.weather_app_seven.ui.theme.WhiteBackground
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -61,13 +64,15 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import kotlinx.coroutines.delay
 import java.util.Calendar
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalPermissionsApi::class)
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun Dashboard(
     navController: NavController,
     weatherViewModel: WeatherViewModel,
-    user: User? = null
+    user: User? = null,
+    weatherHistoryViewModel: WeatherHistoryViewModel
 ) {
     val context = LocalContext.current
     val locationProvider = remember { LocationHelper(context) }
@@ -131,6 +136,8 @@ fun Dashboard(
     val humidity = weatherState.value?.humidity
     val visibility = weatherState.value?.visibility
     val weatherIcon = weatherState.value?.iconCode
+    var currentTime by mutableLongStateOf(0L)
+
 
     // Time-based background state
     var isNightTime by remember { mutableStateOf(false) }
@@ -141,7 +148,25 @@ fun Dashboard(
             val hour = calendar.get(Calendar.HOUR_OF_DAY)
             // Night time: 6 PM (18:00) to 6 AM (6:00)
             isNightTime = hour >= 18 || hour < 6
+            Log.e("Dashboard", "isNightTime: $weatherIcon")
             delay(60000L) // Check every minute
+        }
+    }
+    LaunchedEffect(currentTemp, location, weatherDescription, weatherIcon, user) {
+        while (true) {
+            if (location != null && weatherDescription != null && weatherIcon != null && user?.id != null) {
+                val now = System.currentTimeMillis()  // Get current time here
+                weatherHistoryViewModel.insertWeatherHistory(
+                    WeatherHistory(
+                        userId = user.id,
+                        location = "$location, ${country?.uppercase()}",
+                        dateAndTime = now,
+                        weatherDescription = weatherDescription,
+                        iconCode = weatherIcon
+                    )
+                )
+            }
+            delay(60000L)
         }
     }
 
@@ -186,7 +211,10 @@ fun Dashboard(
             LocationDateCard(
                 location = location,
                 country = country,
-                navController = navController
+                navController = navController,
+                currentTime = {
+                    currentTime = it
+                }
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -304,7 +332,8 @@ fun LogoutHeader(navController: NavController) {
 fun LocationDateCard(
     location: String?,
     country: String?,
-    navController: NavController
+    navController: NavController,
+    currentTime: (Long) -> Unit
 ) {
     var currentTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) {
