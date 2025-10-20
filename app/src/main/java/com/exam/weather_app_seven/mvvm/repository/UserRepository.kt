@@ -17,6 +17,9 @@ class UserRepository @Inject constructor(
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user.asStateFlow()
 
+    suspend fun setUser(user: User?){
+        _user.value = user
+    }
     suspend fun insertUser(user: User) {
         userService.insertUser(
             userEntity = UserEntity(

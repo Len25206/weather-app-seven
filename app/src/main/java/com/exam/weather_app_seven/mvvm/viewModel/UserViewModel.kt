@@ -21,6 +21,12 @@ class UserViewModel @Inject constructor(
         }
     }
 
+    fun setUser(user: User?) {
+        viewModelScope.launch {
+            userRepository.setUser(user)
+        }
+    }
+
     fun loginUser(email: String, password: String) {
         viewModelScope.launch {
             userRepository.getUserByEmailAndPassword(email, password)

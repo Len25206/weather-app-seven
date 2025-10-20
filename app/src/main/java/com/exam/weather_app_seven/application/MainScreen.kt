@@ -13,6 +13,7 @@ import com.exam.weather_app_seven.application.ui.page.Dashboard
 import com.exam.weather_app_seven.application.ui.page.Login
 import com.exam.weather_app_seven.application.ui.page.Registration
 import com.exam.weather_app_seven.application.ui.page.WeatherHistory
+import com.exam.weather_app_seven.mvvm.model.User
 import com.exam.weather_app_seven.mvvm.viewModel.RegistrationViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.UserLoginViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.UserViewModel
@@ -26,6 +27,8 @@ fun MainScreen() {
     val userViewModel: UserViewModel = hiltViewModel()
     val registrationViewModel: RegistrationViewModel = hiltViewModel()
     val userLoginViewModel: UserLoginViewModel = hiltViewModel()
+    var userData: User? = null
+
 
     MainNav.setController(navController)
     BackHandler(enabled = true) {
@@ -39,7 +42,10 @@ fun MainScreen() {
             Login(
                 navController,
                 userViewModel,
-                userLoginViewModel
+                userLoginViewModel,
+                userData = { user ->
+                    userData = user
+                }
             )
         }
         composable(Screen.RegisterPage.route)
@@ -47,20 +53,22 @@ fun MainScreen() {
             Registration(
                 navController,
                 userViewModel,
-                registrationViewModel
+                registrationViewModel,
             )
         }
         composable(Screen.DashboardPage.route) {
             Dashboard(
                 navController,
-                weatherViewModel
+                weatherViewModel,
+                userData
             )
         }
 
         composable(Screen.HistoryPage.route) {
             WeatherHistory(
                 navController,
-                weatherViewModel
+                weatherViewModel,
+                userData
             )
         }
 

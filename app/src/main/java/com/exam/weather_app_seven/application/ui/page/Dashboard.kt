@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,25 +16,36 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -41,16 +53,21 @@ import coil.compose.AsyncImage
 import com.exam.weather_app_seven.Utils.DateTimeHelper
 import com.exam.weather_app_seven.Utils.LocationHelper
 import com.exam.weather_app_seven.application.Screen
+import com.exam.weather_app_seven.mvvm.model.User
 import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
+import com.exam.weather_app_seven.ui.theme.WhiteBackground
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import kotlinx.coroutines.delay
+import java.util.Calendar
 
 @OptIn(ExperimentalPermissionsApi::class)
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun Dashboard(
     navController: NavController,
-    weatherViewModel: WeatherViewModel
+    weatherViewModel: WeatherViewModel,
+    user: User? = null
 ) {
     val context = LocalContext.current
     val locationProvider = remember { LocationHelper(context) }
@@ -115,264 +132,312 @@ fun Dashboard(
     val visibility = weatherState.value?.visibility
     val weatherIcon = weatherState.value?.iconCode
 
+    // Time-based background state
+    var isNightTime by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            val calendar = Calendar.getInstance()
+            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+            // Night time: 6 PM (18:00) to 6 AM (6:00)
+            isNightTime = hour >= 18 || hour < 6
+            delay(60000L) // Check every minute
+        }
+    }
+
     val morningGradientColors = listOf(
-        Color(0xFFF3C9DA), // Dawn Pink
-        Color(0xFFF7E7C5), // Morning Gold
-        Color(0xFFCDE1E5), // Light Blue
-        Color(0xFF89B8E1), // Sky Blue
-        Color(0xFF3A7D9C)  // Deep Blue
+        Color(0xFF4A90E2),
+        Color(0xFF5FA3E8),
+        Color(0xFF7BB8EF),
+        Color(0xFFA8D5F5)
     )
 
     val nightGradientColors = listOf(
-        Color(0xFF1A0F3D), // Dark Purple
-        Color(0xFF2B2F77), // Deep Indigo
-        Color(0xFF483475), // Royal Blue
-        Color(0xFF141852), // Midnight Blue
-        Color(0xFF070B34)  // Navy Blue
+        Color(0xFF0F2027),
+        Color(0xFF203A43),
+        Color(0xFF2C5364)
     )
+
     val backgroundBrush = Brush.verticalGradient(
-        colors = morningGradientColors,
+        colors = if (isNightTime) nightGradientColors else morningGradientColors,
         startY = 0f,
         endY = Float.POSITIVE_INFINITY
     )
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(
-                vertical = 50.dp,
-                horizontal = 20.dp
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+            .background(backgroundBrush)
     ) {
-        MainBoard(
-            backgroundBrush,
-            location = location,
-            temperature = currentTemp,
-            weatherDescription = weatherDescription,
-            country = country,
-            iconCode = weatherIcon,
-            navController = navController
-        )
-        Spacer(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(30.dp)
-        )
-        SunRiseSunSet(
-            brush = backgroundBrush,
-            sunrise = sunrise,
-            sunset = sunset
-        )
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(30.dp)
-        )
-        WindAndAir(
-            brush = backgroundBrush,
-            windSpeed = windSpeed,
-            pressure = pressure,
-            humidity = humidity,
-            visibility = visibility
-        )
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(30.dp)
-        )
-        TextButton(
-            onClick = { navController.navigate(Screen.LoginPage.route)},
-            modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            // Header with logout
+            LogoutHeader(navController = navController)
 
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Location and Date
+            LocationDateCard(
+                location = location,
+                country = country,
+                navController = navController
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Main Temperature Display
+            MainTemperatureCard(
+                temperature = currentTemp,
+                weatherDescription = weatherDescription,
+                iconCode = weatherIcon
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Sun Times Card
+            SunTimesCard(
+                sunrise = sunrise,
+                sunset = sunset
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Weather Details Grid
+            WeatherDetailsGrid(
+                windSpeed = windSpeed,
+                pressure = pressure,
+                humidity = humidity,
+                visibility = visibility
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // History Button
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(8.dp, RoundedCornerShape(15.dp)),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White.copy(alpha = 0.95f)
+                ),
+                shape = RoundedCornerShape(15.dp)
+            ) {
+                TextButton(
+                    onClick = { navController.navigate(Screen.HistoryPage.route) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "📊 VIEW WEATHER HISTORY",
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            color = Color(0xFF4A90E2),
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+
+        if (location == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(if (isNightTime) Color(0xFF0F2027) else Color(0xFF4A90E2)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = if (isNightTime) "🌙" else "🌤️",
+                        style = TextStyle(fontSize = 60.sp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Fetching weather data...",
+                        style = TextStyle(
+                            fontSize = 20.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LogoutHeader(navController: NavController) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextButton(
+            onClick = { navController.navigate(Screen.LoginPage.route) }
         ) {
             Text(
-                text = "SHOW WEATHER HISTORY",
+                text = "🚪 Logout",
                 style = TextStyle(
-                    fontSize = 20.sp,
-                    color = Color.Black
+                    fontSize = 16.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold
                 )
             )
         }
     }
 }
 
-
+@SuppressLint("AutoboxingStateCreation")
 @Composable
-fun CurrentDate(
+fun LocationDateCard(
+    location: String?,
+    country: String?,
     navController: NavController
 ) {
-    val currentDate = System.currentTimeMillis()
-    val uiCurrentDate = DateTimeHelper.toReadableDate(currentDate)
-    val week = DateTimeHelper.toWeek(currentDate)
-    Row(
+    var currentTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            currentTime = System.currentTimeMillis()
+            delay(1000L)
+        }
+    }
+
+    val uiCurrentDate = DateTimeHelper.toReadableDate(currentTime)
+    val week = DateTimeHelper.toWeek(currentTime)
+
+    Card(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(8.dp, RoundedCornerShape(20.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.95f)
+        ),
+        shape = RoundedCornerShape(20.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = null,
+                    tint = Color(0xFFE74C3C),
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "$location, ${country?.uppercase()}",
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        color = Color(0xFF2C3E50),
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             Text(
                 text = week.uppercase(),
                 style = TextStyle(
-                    fontSize = 25.sp,
-                    color = Color.Black
+                    fontSize = 16.sp,
+                    color = Color(0xFF7F8C8D),
+                    fontWeight = FontWeight.Medium
                 )
             )
             Text(
                 text = uiCurrentDate,
                 style = TextStyle(
-                    fontSize = 15.sp,
-                    color = Color.Black
+                    fontSize = 14.sp,
+                    color = Color(0xFF95A5A6)
                 )
             )
         }
-
-        TextButton(
-            onClick = {
-                navController.navigate(Screen.LoginPage.route)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-
-        ) {
-            Text(
-                text = "LOGOUT",
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    color = Color.Black
-                )
-            )
-        }
-    }
-
-}
-
-@Composable
-fun MainBoard(
-    brush: Brush,
-    location: String? = "",
-    temperature: Double? = 0.0,
-    weatherDescription: String? = "",
-    country: String? = "",
-    iconCode: String? = "",
-    navController: NavController
-) {
-    Column(
-        modifier = Modifier
-            .shadow(
-                10.dp,
-                shape = RoundedCornerShape(
-                    30.dp
-                )
-            )
-            .fillMaxWidth()
-            .height(270.dp)
-            .background(
-                brush = brush,
-                shape = RoundedCornerShape(
-                    bottomStart = 30.dp,
-                    bottomEnd = 30.dp
-                )
-            )
-            .padding(
-                horizontal = 15.dp,
-                vertical = 15.dp
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Row(
-            modifier = Modifier
-                .wrapContentSize()
-                .background(
-                    Color.White,
-                    shape = RoundedCornerShape(10.dp)
-                )
-                .padding(horizontal = 15.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-
-            Icon(
-                imageVector = Icons.Default.LocationOn,
-                contentDescription = null,
-                tint = Color.Red,
-            )
-
-            Text(
-                text = "$location, ${country?.uppercase()}",
-                style = TextStyle(
-                    fontSize = 25.sp,
-                    color = Color.Black
-                )
-            )
-
-        }
-        Spacer(modifier = Modifier.height(15.dp))
-        CurrentDate(
-            navController = navController
-        )
-        Spacer(modifier = Modifier.height(15.dp))
-        CurrentTemperature(
-            temperature = temperature,
-            weatherDescription = weatherDescription,
-            iconCode = iconCode
-        )
     }
 }
 
 @SuppressLint("DefaultLocale")
 @Composable
-fun CurrentTemperature(
-    temperature: Double? = 0.0,
-    weatherDescription: String? = "",
-    iconCode: String? = ""
+fun MainTemperatureCard(
+    temperature: Double?,
+    weatherDescription: String?,
+    iconCode: String?
 ) {
     val kelvin = 273.15
     val temperatureDouble = temperature ?: 0.0
     val celsius = temperatureDouble - kelvin
     val formattedTemp = String.format("%.1f", celsius)
-    val icon = "https://openweathermap.org/img/wn/$iconCode@2x.png"
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
+    val icon = "https://openweathermap.org/img/wn/$iconCode@4x.png"
 
-        Row(
-            modifier = Modifier.wrapContentSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(12.dp, RoundedCornerShape(25.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.95f)
+        ),
+        shape = RoundedCornerShape(25.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(30.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
+            Box(
+                modifier = Modifier
+                    .size(140.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray),
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(140.dp)
+                )
+            }
+
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             Text(
-                text = "$formattedTemp°C",
+                text = "$formattedTemp°",
                 style = TextStyle(
-                    fontSize = 50.sp,
-                    color = Color.Black
+                    fontSize = 72.sp,
+                    color = Color(0xFF2C3E50),
+                    fontWeight = FontWeight.Bold
                 )
             )
-            Spacer(modifier = Modifier.weight(1f))
-            AsyncImage(
-                model = icon,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(100.dp),
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        weatherDescription?.uppercase()?.let {
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
-                text = it,
+                text = weatherDescription?.uppercase() ?: "",
                 style = TextStyle(
                     fontSize = 20.sp,
-                    color = Color.Black
+                    color = Color(0xFF7F8C8D),
+                    fontWeight = FontWeight.Medium,
+                    letterSpacing = 1.sp
                 )
             )
         }
@@ -380,241 +445,204 @@ fun CurrentTemperature(
 }
 
 @Composable
-fun SunRiseSunSet(
-    brush: Brush,
-    sunrise: String? = "",
-    sunset: String? = ""
+fun SunTimesCard(
+    sunrise: String?,
+    sunset: String?
 ) {
     val sunriseTimeFormatted = sunrise?.let { DateTimeHelper.toReadableTime(it.toLong()) }
     val sunSetTimeFormatted = sunset?.let { DateTimeHelper.toReadableTime(it.toLong()) }
 
-
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(150.dp)
-            .shadow(
-                10.dp,
-                shape = RoundedCornerShape(10.dp)
-            )
-            .background(
-                brush = brush,
-                shape = RoundedCornerShape(10.dp)
-            ),
-
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .shadow(8.dp, RoundedCornerShape(20.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.95f)
+        ),
+        shape = RoundedCornerShape(20.dp)
     ) {
-        Text(
-            text = "🌞Sun Times",
-            style = TextStyle(
-                fontSize = 20.sp,
-                color = Color.Black
-            )
-        )
-        Spacer(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(40.dp)
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+                .padding(20.dp)
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+            Text(
+                text = "☀️ Sun Times",
+                style = TextStyle(
+                    fontSize = 18.sp,
+                    color = Color(0xFF2C3E50),
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text(
-                    text = "Sunrise",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black
-                    )
+                SunTimeItem(
+                    icon = "🌅",
+                    label = "Sunrise",
+                    time = sunriseTimeFormatted ?: "--:--"
                 )
 
-                sunriseTimeFormatted?.let {
-                    Text(
-                        text = it,
-                        style = TextStyle(
-                            fontSize = 15.sp,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
-
-            }
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Sunset",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black,
-                    )
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(60.dp)
+                        .background(WhiteBackground)
                 )
-                sunSetTimeFormatted?.let {
-                    Text(
-                        text = it,
-                        style = TextStyle(
-                            fontSize = 15.sp,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
+
+                SunTimeItem(
+                    icon = "🌇",
+                    label = "Sunset",
+                    time = sunSetTimeFormatted ?: "--:--"
+                )
             }
         }
     }
 }
 
 @Composable
-fun WindAndAir(
-    brush: Brush,
-    windSpeed: Double? = 0.0,
-    pressure: Int? = 0,
-    humidity: Int? = 0,
-    visibility: Int? = 0
-) {
+fun SunTimeItem(icon: String, label: String, time: String) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .shadow(
-                10.dp,
-                shape = RoundedCornerShape(10.dp)
-            )
-            .background(
-                brush = brush,
-                shape = RoundedCornerShape(10.dp)
-            )
-            .padding(
-                horizontal = 15.dp,
-                vertical = 15.dp
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "🍃Wind and Air",
+            text = icon,
+            style = TextStyle(fontSize = 32.sp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = label,
             style = TextStyle(
-                fontSize = 20.sp,
-                color = Color.Black
-            ),
+                fontSize = 14.sp,
+                color = Color(0xFF7F8C8D)
+            )
         )
-        Spacer(
+        Text(
+            text = time,
+            style = TextStyle(
+                fontSize = 18.sp,
+                color = Color(0xFF2C3E50),
+                fontWeight = FontWeight.Bold
+            )
+        )
+    }
+}
+
+@Composable
+fun WeatherDetailsGrid(
+    windSpeed: Double?,
+    pressure: Int?,
+    humidity: Int?,
+    visibility: Int?
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(8.dp, RoundedCornerShape(20.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.95f)
+        ),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(40.dp)
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 15.dp),
+                .padding(20.dp)
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+            Text(
+                text = "🌬️ Weather Details",
+                style = TextStyle(
+                    fontSize = 18.sp,
+                    color = Color(0xFF2C3E50),
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "Wind speed",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black
-                    )
+                WeatherDetailItem(
+                    icon = "💨",
+                    label = "Wind Speed",
+                    value = "${windSpeed ?: 0.0} km/h",
+                    modifier = Modifier.weight(1f)
                 )
-                Text(
-                    text = "$windSpeed km/h",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Pressure",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black
-                    )
-                )
-                Text(
-                    text = "$pressure hpa",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold
-                    )
+                WeatherDetailItem(
+                    icon = "🌡️",
+                    label = "Pressure",
+                    value = "${pressure ?: 0} hPa",
+                    modifier = Modifier.weight(1f)
                 )
             }
 
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                WeatherDetailItem(
+                    icon = "💧",
+                    label = "Humidity",
+                    value = "${humidity ?: 0}%",
+                    modifier = Modifier.weight(1f)
+                )
+                WeatherDetailItem(
+                    icon = "👁️",
+                    label = "Visibility",
+                    value = "${visibility ?: 0} km",
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
-        Spacer(
+    }
+}
+
+@Composable
+fun WeatherDetailItem(
+    icon: String,
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(20.dp)
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
+                .size(50.dp)
+                .clip(CircleShape)
+                .background(WhiteBackground),
+            contentAlignment = Alignment.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(bottom = 10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Humidity",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black
-                    )
-                )
-                Text(
-                    text = "$humidity%",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Visibility",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black
-                    )
-                )
-                Text(
-                    text = "$visibility km",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
+            Text(
+                text = icon,
+                style = TextStyle(fontSize = 24.sp)
+            )
         }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = label,
+            style = TextStyle(
+                fontSize = 12.sp,
+                color = Color(0xFF7F8C8D)
+            ),
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = value,
+            style = TextStyle(
+                fontSize = 16.sp,
+                color = Color(0xFF2C3E50),
+                fontWeight = FontWeight.Bold
+            ),
+            textAlign = TextAlign.Center
+        )
     }
 }
