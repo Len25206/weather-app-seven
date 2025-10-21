@@ -56,6 +56,7 @@ fun MainScreen() {
                 navController,
                 userViewModel,
                 registrationViewModel,
+                weatherViewModel
             )
         }
         composable(Screen.DashboardPage.route) {

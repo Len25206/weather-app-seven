@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -54,11 +55,9 @@ import coil.compose.AsyncImage
 import com.exam.weather_app_seven.Utils.DateTimeHelper
 import com.exam.weather_app_seven.Utils.LocationHelper
 import com.exam.weather_app_seven.application.Screen
-import com.exam.weather_app_seven.database.entity.WeatherHistoryEntity
 import com.exam.weather_app_seven.mvvm.model.User
 import com.exam.weather_app_seven.mvvm.model.WeatherHistory
 import com.exam.weather_app_seven.mvvm.viewModel.UserLoginViewModel
-import com.exam.weather_app_seven.mvvm.viewModel.UserViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.WeatherHistoryViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
 import com.exam.weather_app_seven.ui.theme.WhiteBackground
@@ -78,6 +77,8 @@ fun Dashboard(
     userLoginViewModel: UserLoginViewModel,
     weatherHistoryViewModel: WeatherHistoryViewModel
 ) {
+
+    val isError by weatherViewModel.isError.collectAsState()
     BackHandler {
 
     }
@@ -91,6 +92,19 @@ fun Dashboard(
     )
     LaunchedEffect(true) {
         locationPermissionsState.launchMultiplePermissionRequest()
+    }
+
+    LaunchedEffect(isError) {
+        if (isError) {
+            Toast.makeText(context, "Invalid API key", Toast.LENGTH_SHORT).show()
+            delay(1000)
+            userLoginViewModel.setEmail("")
+            userLoginViewModel.setPassword("")
+            navController.navigate(Screen.LoginPage.route) {
+                popUpTo(Screen.DashboardPage.route) { inclusive = true }
+            }
+            weatherViewModel.resetHandlerError()
+        }
     }
 
     when {

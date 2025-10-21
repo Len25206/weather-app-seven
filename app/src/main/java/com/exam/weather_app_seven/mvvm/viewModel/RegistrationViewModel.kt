@@ -35,6 +35,13 @@ class RegistrationViewModel @Inject constructor() : ViewModel() {
     private val _apiKey = MutableStateFlow("")
     val apiKey: StateFlow<String> = _apiKey.asStateFlow()
 
+    private val _supportingText = MutableStateFlow("")
+    val supportingText: StateFlow<String> = _supportingText.asStateFlow()
+
+    fun setSupportingText(value: String) {
+        _supportingText.value = value
+    }
+
     fun setApiKey(value: String) {
         _apiKey.value = value
     }
@@ -54,6 +61,7 @@ class RegistrationViewModel @Inject constructor() : ViewModel() {
     fun setConfirmPassword(value: String) {
         _confirmPassword.value = value
     }
+
 
     fun validateAndRegister(onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         when {

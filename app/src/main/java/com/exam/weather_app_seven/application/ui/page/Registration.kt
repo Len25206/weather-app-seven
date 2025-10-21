@@ -1,5 +1,6 @@
 package com.exam.weather_app_seven.application.ui.page
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -58,12 +59,15 @@ import com.exam.weather_app_seven.application.ui.dialog.CustomMessageDialog
 import com.exam.weather_app_seven.mvvm.model.User
 import com.exam.weather_app_seven.mvvm.viewModel.RegistrationViewModel
 import com.exam.weather_app_seven.mvvm.viewModel.UserViewModel
+import com.exam.weather_app_seven.mvvm.viewModel.WeatherViewModel
 import java.util.regex.Pattern
+
 @Composable
 fun Registration(
     navController: NavController? = null,
     userViewModel: UserViewModel,
-    registrationViewModel: RegistrationViewModel
+    registrationViewModel: RegistrationViewModel,
+    weatherViewModel: WeatherViewModel
 ) {
     BackHandler {
         // Optional back press handling
@@ -76,6 +80,7 @@ fun Registration(
     val showDialog by registrationViewModel.showDialog.collectAsState()
     val dialogMessage by registrationViewModel.dialogMessage.collectAsState()
     val dialogStatus by registrationViewModel.dialogStatus.collectAsState()
+    val isError by weatherViewModel.isError.collectAsState()
 
     var isEmailValid by remember { mutableStateOf(true) }
     var isApiKeyValid by remember { mutableStateOf(true) }
@@ -88,6 +93,12 @@ fun Registration(
             registrationViewModel.setDialogMessage("")
             registrationViewModel.clearForm()
             registrationViewModel.setApiKey("")
+        }
+    }
+    LaunchedEffect(isError) {
+        if (isError) {
+            isApiKeyValid = false
+            weatherViewModel.resetHandlerError()
         }
     }
 
@@ -206,22 +217,36 @@ fun Registration(
                         onValueChange = {
                             registrationViewModel.setApiKey(it)
                             isApiKeyValid = it.isNotBlank()
+                            if (isApiKeyValid) {
+                                weatherViewModel.weatherService(
+                                    lat = "12.879721",
+                                    lon = "121.774017",
+                                    appid = it
+                                )
+
+                            }
                         },
                         label = { Text("API Key (required)") },
                         shape = RoundedCornerShape(15.dp),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = if (isApiKeyValid) Color(0xFF4A90E2) else Color(0xFFE74C3C),
-                            unfocusedBorderColor = if (isApiKeyValid) Color(0xFFBDC3C7) else Color(0xFFE74C3C),
-                            focusedLabelColor = if (isApiKeyValid) Color(0xFF4A90E2) else Color(0xFFE74C3C),
+                            focusedBorderColor = if (isApiKeyValid) Color(0xFF4A90E2) else Color(
+                                0xFFE74C3C
+                            ),
+                            unfocusedBorderColor = if (isApiKeyValid) Color(0xFFBDC3C7) else Color(
+                                0xFFE74C3C
+                            ),
+                            focusedLabelColor = if (isApiKeyValid) Color(0xFF4A90E2) else Color(
+                                0xFFE74C3C
+                            ),
                             cursorColor = Color(0xFF4A90E2)
                         ),
                         isError = !isApiKeyValid,
                         supportingText = {
                             if (!isApiKeyValid) {
                                 Text(
-                                    text = "API Key is required",
+                                    text = "API Key is invalid",
                                     color = Color(0xFFE74C3C),
                                     fontSize = 12.sp
                                 )
@@ -275,9 +300,15 @@ fun Registration(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = if (isEmailValid) Color(0xFF4A90E2) else Color(0xFFE74C3C),
-                            unfocusedBorderColor = if (isEmailValid) Color(0xFFBDC3C7) else Color(0xFFE74C3C),
-                            focusedLabelColor = if (isEmailValid) Color(0xFF4A90E2) else Color(0xFFE74C3C),
+                            focusedBorderColor = if (isEmailValid) Color(0xFF4A90E2) else Color(
+                                0xFFE74C3C
+                            ),
+                            unfocusedBorderColor = if (isEmailValid) Color(0xFFBDC3C7) else Color(
+                                0xFFE74C3C
+                            ),
+                            focusedLabelColor = if (isEmailValid) Color(0xFF4A90E2) else Color(
+                                0xFFE74C3C
+                            ),
                             cursorColor = Color(0xFF4A90E2)
                         ),
                         isError = !isEmailValid,
